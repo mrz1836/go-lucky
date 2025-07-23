@@ -749,69 +749,6 @@ body {
     color: var(--accent);
 }
 
-/* Cosmic Wisdom */
-.cosmic-wisdom {
-    text-align: center;
-    background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(99, 102, 241, 0.1));
-    border: 1px solid rgba(124, 58, 237, 0.2);
-    border-radius: var(--border-radius-lg);
-    padding: var(--space-2xl);
-    max-width: 800px;
-    margin: 0 auto;
-}
-
-.cosmic-wisdom h3 {
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin-bottom: var(--space-lg);
-    background: linear-gradient(135deg, var(--cosmic-purple), var(--cosmic-pink));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-.wisdom-content {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-lg);
-    text-align: left;
-}
-
-.wisdom-quote {
-    display: flex;
-    align-items: flex-start;
-    gap: var(--space-md);
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: var(--border-radius);
-    padding: var(--space-lg);
-    transition: all var(--transition-normal);
-}
-
-.wisdom-quote:hover {
-    background: rgba(255, 255, 255, 0.06);
-    transform: translateY(-2px);
-    border-color: rgba(124, 58, 237, 0.3);
-}
-
-.wisdom-quote.highlight {
-    background: rgba(124, 58, 237, 0.15);
-    border-color: rgba(124, 58, 237, 0.4);
-}
-
-.wisdom-icon {
-    font-size: 1.5rem;
-    flex-shrink: 0;
-    margin-top: 2px;
-}
-
-.wisdom-text {
-    font-style: italic;
-    color: var(--text-secondary);
-    line-height: 1.6;
-    font-size: 1.1rem;
-}
-
 /* Disclaimer Section */
 .disclaimer {
     padding: var(--space-3xl) 0;
