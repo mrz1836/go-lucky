@@ -386,8 +386,11 @@ body {
 
 .demo-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
     gap: var(--space-xl);
+    max-width: 1000px;
+    margin: 0 auto;
 }
 
 .demo-card {
@@ -396,6 +399,9 @@ body {
     border-radius: var(--border-radius-lg);
     padding: var(--space-xl);
     backdrop-filter: blur(10px);
+    min-height: 280px;
+    display: flex;
+    flex-direction: column;
 }
 
 .demo-header {
@@ -405,6 +411,14 @@ body {
     margin-bottom: var(--space-lg);
     flex-wrap: wrap;
     gap: var(--space-md);
+    flex-shrink: 0;
+}
+
+.demo-card .demo-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .demo-header h3 {
@@ -894,6 +908,16 @@ body {
 @media (max-width: 768px) {
     .container {
         padding: 0 var(--space-md);
+    }
+    
+    .demo-grid {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto;
+        max-width: none;
+    }
+    
+    .demo-card {
+        min-height: auto;
     }
     
     .hero-stats {
