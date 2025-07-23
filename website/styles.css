@@ -283,8 +283,11 @@ body {
 
 .features-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
     gap: var(--space-xl);
+    max-width: 1000px;
+    margin: 0 auto;
 }
 
 .feature-card {
@@ -296,6 +299,9 @@ body {
     transition: all var(--transition-normal);
     position: relative;
     overflow: hidden;
+    min-height: 320px;
+    display: flex;
+    flex-direction: column;
 }
 
 .feature-card::before {
@@ -343,6 +349,12 @@ body {
     color: white;
 }
 
+.feature-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
 .feature-card h3 {
     font-size: 1.25rem;
     font-weight: 600;
@@ -353,11 +365,13 @@ body {
     color: var(--text-secondary);
     margin-bottom: var(--space-lg);
     line-height: 1.6;
+    flex: 1;
 }
 
 .feature-metrics {
     display: flex;
     gap: var(--space-lg);
+    margin-top: auto;
 }
 
 .metric {
@@ -910,12 +924,14 @@ body {
         padding: 0 var(--space-md);
     }
     
+    .features-grid,
     .demo-grid {
         grid-template-columns: 1fr;
         grid-template-rows: auto;
         max-width: none;
     }
     
+    .feature-card,
     .demo-card {
         min-height: auto;
     }
