@@ -57,3 +57,4 @@ coverage.html
 coverage.txt
 profile.out
 EOF < /dev/null
+.env
