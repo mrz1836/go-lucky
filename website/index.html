@@ -153,77 +153,148 @@
             <div class="demo-grid">
                 <div class="demo-card">
                     <div class="demo-header">
-                        <h3>Frequency Distribution</h3>
-                        <div class="demo-controls">
-                            <button class="demo-btn active" data-chart="frequency">All Time</button>
-                            <button class="demo-btn" data-chart="recent">Recent 50</button>
-                        </div>
-                    </div>
-                    <div class="chart-container">
-                        <canvas id="frequencyChart"></canvas>
-                    </div>
-                </div>
-
-                <div class="demo-card">
-                    <div class="demo-header">
-                        <h3>Cosmic Correlations</h3>
+                        <h3>🌙 Lunar Correlations</h3>
                         <div class="cosmic-indicator">
-                            <span class="cosmic-phase">🌙 Waxing Gibbous</span>
-                            <span class="cosmic-strength">Correlation: 0.023</span>
+                            <span class="cosmic-phase">New Moon (3%)</span>
+                            <span class="cosmic-strength">Leo ♌</span>
                         </div>
                     </div>
-                    <div class="chart-container">
-                        <canvas id="cosmicChart"></canvas>
+                    <div class="correlation-results">
+                        <div class="correlation-item">
+                            <div class="correlation-phase">New Moon</div>
+                            <div class="correlation-number">Number 7</div>
+                            <div class="correlation-value">+3.2%</div>
+                        </div>
+                        <div class="correlation-item">
+                            <div class="correlation-phase">Full Moon</div>
+                            <div class="correlation-number">Number 46</div>
+                            <div class="correlation-value">+2.9%</div>
+                        </div>
+                        <div class="correlation-item">
+                            <div class="correlation-phase">First Quarter</div>
+                            <div class="correlation-number">Number 32</div>
+                            <div class="correlation-value">+3.1%</div>
+                        </div>
                     </div>
                 </div>
 
                 <div class="demo-card">
                     <div class="demo-header">
-                        <h3>Current Recommendations</h3>
-                        <div class="recommendation-type">
-                            <span class="rec-badge">Cosmic Strategy</span>
-                        </div>
+                        <h3>🌟 Cosmic Selection</h3>
+                        <div class="cosmic-date">July 23, 2025</div>
                     </div>
-                    <div class="recommendations">
+                    <div class="cosmic-selection">
                         <div class="number-set">
                             <div class="main-numbers">
-                                <span class="number">07</span>
-                                <span class="number">23</span>
-                                <span class="number">31</span>
-                                <span class="number">42</span>
                                 <span class="number">45</span>
+                                <span class="number">22</span>
+                                <span class="number">01</span>
+                                <span class="number">23</span>
+                                <span class="number">42</span>
                             </div>
                             <div class="lucky-ball">
                                 <span class="lucky">11</span>
                             </div>
                         </div>
-                        <div class="confidence-meter">
-                            <div class="confidence-bar">
-                                <div class="confidence-fill" style="width: 87%"></div>
-                            </div>
-                            <span class="confidence-text">87% Confidence</span>
+                        <div class="cosmic-suggestion">
+                            <p>🎯 New moon periods show balanced number distribution. A mix of high and low numbers may be favorable.</p>
                         </div>
                     </div>
                 </div>
 
                 <div class="demo-card">
                     <div class="demo-header">
-                        <h3>Randomness Analysis</h3>
-                        <div class="randomness-score">
-                            <span class="score-value">45.2%</span>
-                            <span class="score-label">Randomness</span>
+                        <h3>📊 Statistical Picks</h3>
+                        <div class="strategy-tabs">
+                            <button class="strategy-tab active" data-strategy="balanced">Balanced</button>
+                            <button class="strategy-tab" data-strategy="hot">Hot</button>
+                            <button class="strategy-tab" data-strategy="overdue">Overdue</button>
                         </div>
                     </div>
-                    <div class="randomness-visual">
-                        <div class="randomness-gauge">
-                            <div class="gauge-fill" style="--percentage: 45.2"></div>
-                            <div class="gauge-center">
-                                <span class="gauge-value">45.2%</span>
-                                <span class="gauge-label">Random</span>
+                    <div class="strategy-results">
+                        <div class="strategy-set active" data-strategy="balanced">
+                            <div class="number-set">
+                                <div class="main-numbers">
+                                    <span class="number">01</span>
+                                    <span class="number">03</span>
+                                    <span class="number">15</span>
+                                    <span class="number">28</span>
+                                    <span class="number">30</span>
+                                </div>
+                                <div class="lucky-ball">
+                                    <span class="lucky">9</span>
+                                </div>
+                            </div>
+                            <div class="confidence-meter">
+                                <div class="confidence-bar">
+                                    <div class="confidence-fill" style="width: 47.1%"></div>
+                                </div>
+                                <span class="confidence-text">47.1% Confidence</span>
                             </div>
                         </div>
-                        <div class="randomness-interpretation">
-                            <p>Some clustering detected, but within normal variation for lottery systems</p>
+                        <div class="strategy-set" data-strategy="hot">
+                            <div class="number-set">
+                                <div class="main-numbers">
+                                    <span class="number">03</span>
+                                    <span class="number">04</span>
+                                    <span class="number">12</span>
+                                    <span class="number">25</span>
+                                    <span class="number">27</span>
+                                </div>
+                                <div class="lucky-ball">
+                                    <span class="lucky">9</span>
+                                </div>
+                            </div>
+                            <div class="confidence-meter">
+                                <div class="confidence-bar">
+                                    <div class="confidence-fill" style="width: 42.1%"></div>
+                                </div>
+                                <span class="confidence-text">42.1% Confidence</span>
+                            </div>
+                        </div>
+                        <div class="strategy-set" data-strategy="overdue">
+                            <div class="number-set">
+                                <div class="main-numbers">
+                                    <span class="number">01</span>
+                                    <span class="number">15</span>
+                                    <span class="number">28</span>
+                                    <span class="number">30</span>
+                                    <span class="number">31</span>
+                                </div>
+                                <div class="lucky-ball">
+                                    <span class="lucky">9</span>
+                                </div>
+                            </div>
+                            <div class="confidence-meter">
+                                <div class="confidence-bar">
+                                    <div class="confidence-fill" style="width: 39.7%"></div>
+                                </div>
+                                <span class="confidence-text">39.7% Confidence</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="demo-card">
+                    <div class="demo-header">
+                        <h3>📅 Temporal Patterns</h3>
+                        <div class="current-day">Wednesday</div>
+                    </div>
+                    <div class="temporal-patterns">
+                        <div class="pattern-item">
+                            <div class="pattern-day">Monday</div>
+                            <div class="pattern-number">Number 3</div>
+                            <div class="pattern-count">68 times</div>
+                        </div>
+                        <div class="pattern-item">
+                            <div class="pattern-day">Thursday</div>
+                            <div class="pattern-number">Number 10</div>
+                            <div class="pattern-count">73 times</div>
+                        </div>
+                        <div class="pattern-item highlight">
+                            <div class="pattern-day">Wednesday</div>
+                            <div class="pattern-number">Number 45</div>
+                            <div class="pattern-count">32 times</div>
                         </div>
                     </div>
                 </div>
@@ -280,6 +351,16 @@ make export-csv</code></pre>
                     </div>
                 </div>
             </div>
+
+            <div class="cosmic-wisdom">
+                <h3>✨ Cosmic Wisdom</h3>
+                <div class="wisdom-grid">
+                    <div class="wisdom-item">🌙 'As above, so below' - but lottery balls don't look up!</div>
+                    <div class="wisdom-item">☀️ The sun has witnessed every drawing, yet keeps its secrets.</div>
+                    <div class="wisdom-item">✨ Remember: The universe is under no obligation to make sense.</div>
+                    <div class="wisdom-item">🎲 ...or to make you wealthy!</div>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -293,6 +374,10 @@ make export-csv</code></pre>
                 <div class="disclaimer-text">
                     <h3>Important Disclaimer</h3>
                     <p>This tool is for <strong>educational and entertainment purposes only</strong>. Lottery drawings are random events, and no analysis can predict future outcomes or improve odds. The cosmic correlation features demonstrate proper statistical analysis and prove that even astronomical events have no meaningful relationship with lottery outcomes.</p>
+                    <div class="statistical-reality">
+                        <h4>📊 Statistical Reality Check:</h4>
+                        <p>All correlations shown are within normal random variation. These patterns are entertaining coincidences, not predictive tools. Remember: Every drawing has exactly the same odds!</p>
+                    </div>
                     <p class="disclaimer-quote">"The universe is under no obligation to make you wealthy, but it's happy to teach you about statistics!" 🌟</p>
                 </div>
             </div>
