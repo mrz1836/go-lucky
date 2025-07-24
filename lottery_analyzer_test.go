@@ -1700,7 +1700,13 @@ func BenchmarkAnalyzerCreation(b *testing.B) {
 
 func BenchmarkRecommendationGeneration(b *testing.B) {
 	ctx := context.Background()
-	analyzer, _ := NewAnalyzer(ctx, "lucky-numbers-history.csv", nil)
+	analyzer, err := NewAnalyzer(ctx, "lucky-numbers-history.csv", nil)
+	if err != nil {
+		b.Skip("Skipping benchmark: CSV file not available")
+	}
+	if analyzer == nil {
+		b.Skip("Skipping benchmark: analyzer is nil")
+	}
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -1710,7 +1716,13 @@ func BenchmarkRecommendationGeneration(b *testing.B) {
 
 func BenchmarkPatternAnalysis(b *testing.B) {
 	ctx := context.Background()
-	analyzer, _ := NewAnalyzer(ctx, "lucky-numbers-history.csv", nil)
+	analyzer, err := NewAnalyzer(ctx, "lucky-numbers-history.csv", nil)
+	if err != nil {
+		b.Skip("Skipping benchmark: CSV file not available")
+	}
+	if analyzer == nil {
+		b.Skip("Skipping benchmark: analyzer is nil")
+	}
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -1729,7 +1741,14 @@ func BenchmarkDataLoading(b *testing.B) {
 
 func BenchmarkCosmicCorrelations(b *testing.B) {
 	ctx := context.Background()
-	analyzer, _ := NewAnalyzer(ctx, "lucky-numbers-history.csv", nil)
+	analyzer, err := NewAnalyzer(ctx, "lucky-numbers-history.csv", nil)
+	if err != nil {
+		b.Skip("Skipping benchmark: CSV file not available")
+	}
+	if analyzer == nil {
+		b.Skip("Skipping benchmark: analyzer is nil")
+	}
+
 	correlationEngine := NewCorrelationEngine(analyzer)
 	_ = correlationEngine.EnrichWithCosmicData(ctx)
 
@@ -1741,7 +1760,14 @@ func BenchmarkCosmicCorrelations(b *testing.B) {
 
 func BenchmarkReportGeneration(b *testing.B) {
 	ctx := context.Background()
-	analyzer, _ := NewAnalyzer(ctx, "lucky-numbers-history.csv", nil)
+	analyzer, err := NewAnalyzer(ctx, "lucky-numbers-history.csv", nil)
+	if err != nil {
+		b.Skip("Skipping benchmark: CSV file not available")
+	}
+	if analyzer == nil {
+		b.Skip("Skipping benchmark: analyzer is nil")
+	}
+
 	correlationEngine := NewCorrelationEngine(analyzer)
 	_ = correlationEngine.EnrichWithCosmicData(ctx)
 	_ = correlationEngine.AnalyzeCorrelations(ctx)
