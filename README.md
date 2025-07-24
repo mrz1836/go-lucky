@@ -1,5 +1,5 @@
 # 🌌 Go-Lucky: NC Lucky for Life Lottery Analyzer
-> Advanced Statistical Analysis Tool with Cosmic Correlation Research for Educational Demonstration of Randomness
+> Advanced Statistical Analysis Tool with Cosmic Correlation Research for Educational Demon of Randomness
 
 <table>
   <thead>
