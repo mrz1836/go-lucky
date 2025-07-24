@@ -185,7 +185,7 @@ make full-analysis
 **Sample Output:**
 ```
 ╔══════════════════════════════════════════════════════════════╗
-║        🌌 COSMIC LOTTERY CORRELATION ANALYZER               ║
+║        🌌 COSMIC LOTTERY CORRELATION ANALYZER                ║
 ╚══════════════════════════════════════════════════════════════╝
 
 Total Drawings Analyzed: 2,847
