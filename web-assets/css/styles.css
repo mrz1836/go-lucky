@@ -931,6 +931,67 @@ body {
     color: var(--text-secondary);
 }
 
+.version-info {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-top: var(--space-md);
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.version-label {
+    font-weight: 500;
+}
+
+.version-number {
+    font-family: var(--font-mono);
+    background: rgba(99, 102, 241, 0.1);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    border-radius: var(--border-radius);
+    padding: var(--space-xs) var(--space-sm);
+    color: var(--primary);
+    font-weight: 500;
+    transition: all var(--transition-fast);
+}
+
+.version-number:hover {
+    background: rgba(99, 102, 241, 0.2);
+    border-color: rgba(99, 102, 241, 0.4);
+}
+
+.version-number.loading {
+    animation: versionPulse 1.5s ease-in-out infinite;
+}
+
+.version-number.error {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.2);
+    color: var(--error);
+}
+
+.version-link {
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+    display: flex;
+    align-items: center;
+}
+
+.version-link:hover {
+    color: var(--primary);
+}
+
+.version-link i {
+    width: 14px;
+    height: 14px;
+}
+
+@keyframes versionPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
 .footer-links {
     display: flex;
     gap: var(--space-3xl);

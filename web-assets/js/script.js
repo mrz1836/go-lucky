@@ -10,6 +10,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize tracking
     initializeTracking();
+    
+    // Initialize version display
+    initializeVersionDisplay();
 });
 
 // Interactive elements
@@ -297,6 +300,106 @@ window.GoLucky = {
     generateRandomCosmicNumbers,
     generateRandomLuckyBall
 };
+
+// Version Display Functions
+function initializeVersionDisplay() {
+    console.log('🔍 Initializing GitHub version display...');
+    fetchLatestVersion();
+}
+
+async function fetchLatestVersion() {
+    const versionElement = document.getElementById('version-display');
+    const versionLink = document.getElementById('version-link');
+    
+    if (!versionElement) {
+        console.log('⚠️ Version display element not found');
+        return;
+    }
+    
+    try {
+        // Add loading state
+        versionElement.classList.add('loading');
+        versionElement.textContent = 'Loading...';
+        
+        console.log('📡 Fetching latest release from GitHub API...');
+        
+        // Fetch latest release from GitHub API
+        const response = await fetch('https://api.github.com/repos/mrz1836/go-lucky/releases/latest', {
+            headers: {
+                'Accept': 'application/vnd.github.v3+json',
+                'User-Agent': 'Go-Lucky-Website'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`GitHub API responded with ${response.status}: ${response.statusText}`);
+        }
+        
+        const release = await response.json();
+        
+        // Extract version info
+        const version = release.tag_name || 'Unknown';
+        const releaseUrl = release.html_url;
+        const publishedAt = new Date(release.published_at);
+        const isPrerelease = release.prerelease;
+        
+        // Update display
+        versionElement.classList.remove('loading');
+        versionElement.textContent = version;
+        versionElement.title = `Released ${publishedAt.toLocaleDateString()}${isPrerelease ? ' (Pre-release)' : ''}`;
+        
+        // Update link to point to specific release
+        if (versionLink && releaseUrl) {
+            versionLink.href = releaseUrl;
+            versionLink.title = `View ${version} release notes`;
+        }
+        
+        // Add prerelease styling if applicable
+        if (isPrerelease) {
+            versionElement.style.background = 'rgba(245, 158, 11, 0.1)';
+            versionElement.style.borderColor = 'rgba(245, 158, 11, 0.2)';
+            versionElement.style.color = 'var(--warning)';
+        }
+        
+        console.log(`✅ Version display updated: ${version}`);
+        
+        // Track version fetch success
+        if (typeof gtag !== 'undefined') {
+            gtag('event', 'version_fetch_success', {
+                event_category: 'Technical',
+                event_label: version,
+                version: version,
+                is_prerelease: isPrerelease,
+                value: 1
+            });
+        }
+        
+    } catch (error) {
+        console.error('❌ Failed to fetch version:', error);
+        
+        // Show error state
+        versionElement.classList.remove('loading');
+        versionElement.classList.add('error');
+        versionElement.textContent = 'v1.0.0'; // Fallback version
+        versionElement.title = 'Could not fetch latest version from GitHub';
+        
+        // Track version fetch error
+        if (typeof gtag !== 'undefined') {
+            gtag('event', 'version_fetch_error', {
+                event_category: 'Technical',
+                event_label: error.message,
+                error_type: 'github_api_error',
+                value: 0
+            });
+        }
+    }
+}
+
+// Refresh version periodically (every 5 minutes) for long-running sessions
+setInterval(() => {
+    console.log('🔄 Refreshing version display...');
+    fetchLatestVersion();
+}, 5 * 60 * 1000);
 
 // Google Analytics / GTM Tracking Functions
 function initializeTracking() {
