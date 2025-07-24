@@ -21,6 +21,8 @@ ignore:
   - ".make/**"
   - ".vscode/**"
   - "examples/**"
+  - "insights/**"
+  - "web-assets/**"
 
 # Parsers
 # --------------

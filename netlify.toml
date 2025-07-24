@@ -15,5 +15,5 @@
 
 [[redirects]]
   from = "/*"
-  to = "/index.html"
+  to = "/web-assets/index.html"
   status = 200
