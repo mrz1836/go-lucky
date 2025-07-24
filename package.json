@@ -5,8 +5,8 @@
   "main": "web-assets/index.html",
   "scripts": {
     "build": "echo 'Building static site...' && cp -r . dist/ 2>/dev/null || true",
-    "start": "npx serve . -p 3000",
-    "dev": "npx serve . -p 3000"
+    "start": "npx serve web-assets -p 3000",
+    "dev": "npx serve web-assets -p 3000"
   },
   "keywords": [
     "lottery",
