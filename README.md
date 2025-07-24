@@ -70,18 +70,18 @@
 <br/>
 
 ## 🗂️ Table of Contents
-* [⚡ Quick Start](#-quick-start)
-* [🔍 How It Works](#-how-it-works)
-* [💡 Usage Examples](#-usage-examples)
-* [📊 Analysis Modes](#-analysis-modes)
-* [🌌 Cosmic Correlation Analysis](#-cosmic-correlation-analysis)
-* [📚 Understanding the Output](#-understanding-the-output)
-* [🏎️ Performance](#️-performance)
-* [🧪 Testing & Development](#-testing--development)
-* [🎯 Make Commands Reference](#-make-commands-reference)
-* [📖 Mathematical Insights](#-mathematical-insights)
-* [🤝 Contributing](#-contributing)
-* [📝 License & Disclaimer](#-license--disclaimer)
+* [Quick Start](#-quick-start)
+* [How It Works](#-how-it-works)
+* [Usage Examples](#-usage-examples)
+* [Analysis Modes](#-analysis-modes)
+* [Cosmic Correlation Analysis](#-cosmic-correlation-analysis)
+* [Understanding the Output](#-understanding-the-output)
+* [Performance](#️-performance)
+* [Testing & Development](#-testing--development)
+* [Make Commands Reference](#-make-commands-reference)
+* [Mathematical Insights](#-mathematical-insights)
+* [Contributing](#-contributing)
+* [License & Disclaimer](#-license--disclaimer)
 
 <br/>
 
@@ -144,12 +144,12 @@ make help
      │               │    └───────────┘         │    │Weather    │         │    └───────────┘
      │               │                          │    │Planetary  │         │                  
      │               │    ┌───────────┐         │    └───────────┘         │    ┌───────────┐
-     └───────────────┼────┤Gap/Pattern│─────────┼─────────────────────────────┤  Results  │
+     └───────────────┼────┤Gap/Pattern│─────────┼───────────────────────────────┤  Results  │
                      │    │ Detection │         │                          │    │  Export   │
                      │    └───────────┘         │                          │    └───────────┘
                      │                          │                          │
                      │    ┌───────────┐         │    ┌───────────┐         │    ┌───────────┐
-                     └────┤Chi-Square │         └────┤Significance│─────────┼────┤Educational│
+                     └────┤Chi-Square │         └────┤Significance│────────┼────┤Educational│
                           │Randomness │              │  Testing  │         │    │ Insights  │
                           └───────────┘              └───────────┘         │    └───────────┘
                                                                            │
@@ -755,6 +755,8 @@ make benchmark
 
 ### ⚖️ License
 This project is for **educational purposes only**. Use at your own risk.
+
+It is licensed under the [MIT License](LICENSE).
 
 ### ⚠️ Critical Understanding
 
