@@ -309,7 +309,7 @@ function initializeVersionDisplay() {
 
 async function fetchLatestVersion() {
     const versionElement = document.getElementById('version-display');
-    const versionLink = document.getElementById('version-link');
+    const versionLinkIcon = document.getElementById('version-link');
     
     if (!versionElement) {
         console.log('⚠️ Version display element not found');
@@ -348,10 +348,15 @@ async function fetchLatestVersion() {
         versionElement.textContent = version;
         versionElement.title = `Released ${publishedAt.toLocaleDateString()}${isPrerelease ? ' (Pre-release)' : ''}`;
         
-        // Update link to point to specific release
-        if (versionLink && releaseUrl) {
-            versionLink.href = releaseUrl;
-            versionLink.title = `View ${version} release notes`;
+        // Update both the version number link and icon link to point to specific release
+        if (releaseUrl) {
+            versionElement.href = releaseUrl;
+            versionElement.title = `View ${version} release notes`;
+            
+            if (versionLinkIcon) {
+                versionLinkIcon.href = releaseUrl;
+                versionLinkIcon.title = `View ${version} release notes`;
+            }
         }
         
         // Add prerelease styling if applicable
