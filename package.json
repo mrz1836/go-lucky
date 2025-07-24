@@ -19,7 +19,10 @@
   "author": "mrz1836",
   "license": "MIT",
   "devDependencies": {
-    "serve": "^14.2.1"
+    "serve": "^14.2.4"
+  },
+  "overrides": {
+    "on-headers": "1.1.0"
   },
   "repository": {
     "type": "git",
