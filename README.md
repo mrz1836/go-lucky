@@ -139,7 +139,7 @@ make help
      │                          │                           │                         │
    2000+                  ┌─────▼─────┐              ┌─────▼─────┐              ┌─────▼─────┐
  Drawings            ┌────┤ Frequency │         ┌────┤Moon Phases│         ┌────┤ Strategy  │
- Per Day             │    │  Analysis │         │    │Solar Wind │         │    │ Engine    │
+     |               │    │  Analysis │         │    │Solar Wind │         │    │ Engine    │
      │               │    └───────────┘         │    │Weather    │         │    └───────────┘
      │               │                          │    │Planetary  │         │                  
      │               │    ┌───────────┐         │    └───────────┘         │    ┌───────────┐
