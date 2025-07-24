@@ -41,7 +41,7 @@
         </a>
       </td>
       <td valign="top" align="left">
-        <a href="https://codecov.io/gh/mrz1836/go-lucky">
+        <a href="https://app.codecov.io/gh/mrz1836/go-lucky/tree/master">
           <img src="https://codecov.io/gh/mrz1836/go-lucky/branch/master/graph/badge.svg?style=flat" alt="Code Coverage">
         </a><br/>
         <img src="https://img.shields.io/badge/linter-0_issues-brightgreen?style=flat&logo=golangci-lint" alt="Linter">
