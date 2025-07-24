@@ -332,7 +332,7 @@ func FuzzCosmicDataEnrichment(f *testing.F) {
 
 		// Verify cosmic data was created for drawings
 		for _, drawing := range analyzer.drawings {
-			dateKey := drawing.Date.Format("2006-01-02")
+			dateKey := drawing.Date.Format(dateFormatISO)
 			if cosmic, exists := ce.cosmicData[dateKey]; exists {
 				// Verify cosmic data is valid
 				if cosmic.MoonPhase < 0 || cosmic.MoonPhase >= 1 {
@@ -475,7 +475,7 @@ func FuzzPredictBasedOnCosmicConditions(f *testing.F) {
 
 		// Pre-populate with some cosmic data
 		testDate := time.Unix(unixTime, 0).UTC()
-		dateKey := testDate.Format("2006-01-02")
+		dateKey := testDate.Format(dateFormatISO)
 
 		cosmic := &CosmicData{
 			Date:             testDate,

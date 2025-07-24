@@ -40,8 +40,8 @@
 	},
 	"linters": {
 		"enable": [
-      "asasalint",
-      "arangolint",
+			"arangolint",
+			"asasalint",
 			"asciicheck",
 			"bidichk",
 			"bodyclose",
@@ -101,13 +101,13 @@
 			"zerologlint"
 		],
 		"disable": [
-			"gocritic",
-			"godot",
-			"wsl_v5",
-			"gocognit",
 			"exhaustive",
+			"funcorder",
+			"gocognit",
+			"gocritic",
 			"gocyclo",
-			"funcorder"
+			"godot",
+			"wsl_v5"
 		],
 		"settings": {
 			"revive": {

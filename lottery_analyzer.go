@@ -21,6 +21,14 @@ var ErrUnsupportedExportFormat = errors.New("unsupported export format")
 // ErrInvalidFilePath indicates an invalid file path was provided
 var ErrInvalidFilePath = errors.New("invalid file path")
 
+const (
+	// Error message templates
+	errMsgInvalidFilePath    = "invalid file path: %w"
+	errMsgFailedToOpenFile   = "failed to open file: %w"
+	errMsgFailedToCreateFile = "failed to create file: %w"
+	errMsgFailedToCloseFile  = "Warning: failed to close file: %v\n"
+)
+
 // validateFilePath performs basic security validation on file paths
 func validateFilePath(filename string) error {
 	// Check for empty path
@@ -208,17 +216,17 @@ func NewAnalyzer(ctx context.Context, filename string, config *AnalysisConfig) (
 	}
 
 	if err := validateFilePath(filename); err != nil {
-		return nil, fmt.Errorf("invalid file path: %w", err)
+		return nil, fmt.Errorf(errMsgInvalidFilePath, err)
 	}
 
 	file, err := os.Open(filename) // #nosec G304 - path validated above
 	if err != nil {
-		return nil, fmt.Errorf("failed to open file: %w", err)
+		return nil, fmt.Errorf(errMsgFailedToOpenFile, err)
 	}
 	defer func() {
 		if closeErr := file.Close(); closeErr != nil {
 			// Log error but don't return it as we're in defer
-			_, _ = fmt.Fprintf(os.Stderr, "Warning: failed to close file: %v\n", closeErr)
+			_, _ = fmt.Fprintf(os.Stderr, errMsgFailedToCloseFile, closeErr)
 		}
 	}()
 
@@ -859,17 +867,17 @@ func (a *Analyzer) exportJSON(_ context.Context, filename string) error {
 	}
 
 	if err := validateFilePath(filename); err != nil {
-		return fmt.Errorf("invalid file path: %w", err)
+		return fmt.Errorf(errMsgInvalidFilePath, err)
 	}
 
 	file, err := os.Create(filename) // #nosec G304 - path validated above
 	if err != nil {
-		return fmt.Errorf("failed to create file: %w", err)
+		return fmt.Errorf(errMsgFailedToCreateFile, err)
 	}
 	defer func() {
 		if closeErr := file.Close(); closeErr != nil {
 			// Log error but don't return it as we're in defer
-			_, _ = fmt.Fprintf(os.Stderr, "Warning: failed to close file: %v\n", closeErr)
+			_, _ = fmt.Fprintf(os.Stderr, errMsgFailedToCloseFile, closeErr)
 		}
 	}()
 
@@ -881,17 +889,17 @@ func (a *Analyzer) exportJSON(_ context.Context, filename string) error {
 // exportCSV exports analysis results as CSV
 func (a *Analyzer) exportCSV(_ context.Context, filename string) error {
 	if err := validateFilePath(filename); err != nil {
-		return fmt.Errorf("invalid file path: %w", err)
+		return fmt.Errorf(errMsgInvalidFilePath, err)
 	}
 
 	file, err := os.Create(filename) // #nosec G304 - path validated above
 	if err != nil {
-		return fmt.Errorf("failed to create file: %w", err)
+		return fmt.Errorf(errMsgFailedToCreateFile, err)
 	}
 	defer func() {
 		if closeErr := file.Close(); closeErr != nil {
 			// Log error but don't return it as we're in defer
-			_, _ = fmt.Fprintf(os.Stderr, "Warning: failed to close file: %v\n", closeErr)
+			_, _ = fmt.Fprintf(os.Stderr, errMsgFailedToCloseFile, closeErr)
 		}
 	}()
 
@@ -1262,94 +1270,4 @@ func (a *Analyzer) printCosmicAnalysis(ctx context.Context) error {
 	_, _ = fmt.Fprintln(os.Stdout, "🎲 ...or to make you wealthy!")
 
 	return nil
-}
-
-// main is the entry point for the lottery analyzer
-func main() {
-	ctx := context.Background()
-
-	// Default configuration
-	config := &AnalysisConfig{
-		RecentWindow:     50,
-		MinGapMultiplier: 1.5,
-		ConfidenceLevel:  0.95,
-		OutputMode:       "detailed",
-		ExportFormat:     "console",
-	}
-
-	// Parse command line arguments
-	if len(os.Args) > 1 {
-		for i := 1; i < len(os.Args); i++ {
-			switch os.Args[i] {
-			case "--simple":
-				config.OutputMode = "simple"
-			case "--statistical":
-				config.OutputMode = "statistical"
-			case "--cosmic":
-				config.OutputMode = "cosmic"
-			case "--export-json":
-				config.ExportFormat = "json"
-			case "--export-csv":
-				config.ExportFormat = "csv"
-			case "--recent":
-				if i+1 < len(os.Args) {
-					if val, err := strconv.Atoi(os.Args[i+1]); err == nil {
-						config.RecentWindow = val
-						i++
-					}
-				}
-			case "--help":
-				printHelp()
-				return
-			}
-		}
-	}
-
-	// Create analyzer
-	analyzer, err := NewAnalyzer(ctx, "lucky-numbers-history.csv", config)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-		os.Exit(1)
-	}
-
-	// Run analysis
-	if err := analyzer.RunAnalysis(ctx); err != nil {
-		fmt.Fprintf(os.Stderr, "Error running analysis: %v\n", err)
-		os.Exit(1)
-	}
-
-	// Export if requested
-	if config.ExportFormat != "console" {
-		filename := fmt.Sprintf("lottery_analysis_%s.%s",
-			time.Now().Format("20060102_150405"),
-			config.ExportFormat)
-		if err := analyzer.ExportAnalysis(ctx, filename); err != nil {
-			fmt.Fprintf(os.Stderr, "Error exporting analysis: %v\n", err)
-			os.Exit(1)
-		}
-		_, _ = fmt.Fprintf(os.Stdout, "\nAnalysis exported to: %s\n", filename)
-	}
-}
-
-// printHelp displays usage information
-func printHelp() {
-	_, _ = fmt.Fprintln(os.Stdout, "NC Lucky for Life Lottery Analyzer")
-	_, _ = fmt.Fprintln(os.Stdout, "==================================")
-	_, _ = fmt.Fprintln(os.Stdout)
-	_, _ = fmt.Fprintln(os.Stdout, "Usage: go run lottery_analyzer.go [options]")
-	_, _ = fmt.Fprintln(os.Stdout)
-	_, _ = fmt.Fprintln(os.Stdout, "Options:")
-	_, _ = fmt.Fprintln(os.Stdout, "  --simple           Show simplified analysis")
-	_, _ = fmt.Fprintln(os.Stdout, "  --statistical      Show detailed statistical analysis")
-	_, _ = fmt.Fprintln(os.Stdout, "  --cosmic           Show cosmic correlation analysis")
-	_, _ = fmt.Fprintln(os.Stdout, "  --export-json      Export results to JSON file")
-	_, _ = fmt.Fprintln(os.Stdout, "  --export-csv       Export results to CSV file")
-	_, _ = fmt.Fprintln(os.Stdout, "  --recent <n>       Set recent window size (default: 50)")
-	_, _ = fmt.Fprintln(os.Stdout, "  --help             Show this help message")
-	_, _ = fmt.Fprintln(os.Stdout)
-	_, _ = fmt.Fprintln(os.Stdout, "Examples:")
-	_, _ = fmt.Fprintln(os.Stdout, "  go run lottery_analyzer.go")
-	_, _ = fmt.Fprintln(os.Stdout, "  go run lottery_analyzer.go --simple")
-	_, _ = fmt.Fprintln(os.Stdout, "  go run lottery_analyzer.go --statistical --export-json")
-	_, _ = fmt.Fprintln(os.Stdout, "  go run lottery_analyzer.go --recent 100")
 }

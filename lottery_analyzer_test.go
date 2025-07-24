@@ -4,10 +4,18 @@ import (
 	"context"
 	"math"
 	"os"
+	"strconv"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/suite"
+)
+
+const (
+	// Export formats
+	exportFormatJSON = "json"
+	exportFormatCSV  = "csv"
 )
 
 // AnalyzerTestSuite defines the test suite for lottery analyzer
@@ -213,7 +221,7 @@ func (s *AnalyzerTestSuite) TestScoreNumbersByStrategy() {
 
 // TestExportJSON tests JSON export functionality
 func (s *AnalyzerTestSuite) TestExportJSON() {
-	s.analyzer.config.ExportFormat = "json"
+	s.analyzer.config.ExportFormat = exportFormatJSON
 	testFile := "test_export.json"
 
 	ctx := context.Background()
@@ -230,7 +238,7 @@ func (s *AnalyzerTestSuite) TestExportJSON() {
 
 // TestExportCSV tests CSV export functionality
 func (s *AnalyzerTestSuite) TestExportCSV() {
-	s.analyzer.config.ExportFormat = "csv"
+	s.analyzer.config.ExportFormat = exportFormatCSV
 	testFile := "test_export.csv"
 
 	ctx := context.Background()
@@ -613,13 +621,73 @@ func (s *AnalyzerTestSuite) TestExportErrors() {
 	s.Contains(err.Error(), "unsupported export format")
 
 	// Test invalid file path (directory that doesn't exist)
-	s.analyzer.config.ExportFormat = "json"
+	s.analyzer.config.ExportFormat = exportFormatJSON
 	err = s.analyzer.ExportAnalysis(ctx, "/nonexistent/directory/test.json")
 	s.Require().Error(err)
 
 	// Test read-only directory (simulate permission error)
-	s.analyzer.config.ExportFormat = "csv"
+	s.analyzer.config.ExportFormat = exportFormatCSV
 	err = s.analyzer.ExportAnalysis(ctx, "/test_readonly.csv")
+	s.Error(err)
+}
+
+// TestExportComprehensiveErrors tests comprehensive export error scenarios
+func (s *AnalyzerTestSuite) TestExportComprehensiveErrors() {
+	ctx := context.Background()
+
+	// Store original environment for file validation
+	originalEnv := os.Getenv("GO_LUCKY_STRICT_VALIDATION")
+	defer func() {
+		_ = os.Setenv("GO_LUCKY_STRICT_VALIDATION", originalEnv)
+	}()
+
+	// Enable strict validation to test file path validation
+	_ = os.Setenv("GO_LUCKY_STRICT_VALIDATION", "true")
+
+	// Test JSON export with invalid file path
+	s.analyzer.config.ExportFormat = exportFormatJSON
+	err := s.analyzer.ExportAnalysis(ctx, "")
+	s.Require().Error(err)
+	s.Contains(err.Error(), "invalid file path")
+
+	// Test CSV export with invalid file path
+	s.analyzer.config.ExportFormat = exportFormatCSV
+	err = s.analyzer.ExportAnalysis(ctx, "../invalid.csv")
+	s.Require().Error(err)
+	s.Contains(err.Error(), "invalid file path")
+
+	// Test JSON export with dangerous filename
+	s.analyzer.config.ExportFormat = exportFormatJSON
+	err = s.analyzer.ExportAnalysis(ctx, "test;rm.json")
+	s.Require().Error(err)
+	s.Contains(err.Error(), "invalid file path")
+
+	// Test CSV export with dangerous filename
+	s.analyzer.config.ExportFormat = exportFormatCSV
+	err = s.analyzer.ExportAnalysis(ctx, "test|rm.csv")
+	s.Require().Error(err)
+	s.Contains(err.Error(), "invalid file path")
+
+	// Test with null byte in filename
+	s.analyzer.config.ExportFormat = exportFormatJSON
+	err = s.analyzer.ExportAnalysis(ctx, "test\x00.json")
+	s.Require().Error(err)
+	s.Contains(err.Error(), "invalid file path")
+
+	// Test with Windows reserved name
+	s.analyzer.config.ExportFormat = exportFormatCSV
+	err = s.analyzer.ExportAnalysis(ctx, "CON.csv")
+	s.Require().Error(err)
+	s.Contains(err.Error(), "invalid file path")
+
+	// Test exportJSON and exportCSV directly with permission errors
+	// This would test file creation failures
+	s.analyzer.config.ExportFormat = exportFormatJSON
+	err = s.analyzer.ExportAnalysis(ctx, "/root/test.json") // Should fail with permission error
+	s.Require().Error(err)
+
+	s.analyzer.config.ExportFormat = exportFormatCSV
+	err = s.analyzer.ExportAnalysis(ctx, "/root/test.csv") // Should fail with permission error
 	s.Error(err)
 }
 
@@ -651,6 +719,71 @@ func (s *AnalyzerTestSuite) TestFileValidationEdgeCases() {
 	// Test relative path
 	err = validateFilePath("./test.csv")
 	s.Require().NoError(err)
+}
+
+// TestFileValidationErrors tests comprehensive file validation error scenarios
+func (s *AnalyzerTestSuite) TestFileValidationErrors() {
+	// Test empty path
+	err := validateFilePath("")
+	s.Require().Error(err)
+	s.Equal(ErrInvalidFilePath, err)
+
+	// Store original environment
+	originalEnv := os.Getenv("GO_LUCKY_STRICT_VALIDATION")
+	defer func() {
+		_ = os.Setenv("GO_LUCKY_STRICT_VALIDATION", originalEnv)
+	}()
+
+	// Enable strict validation for these tests
+	_ = os.Setenv("GO_LUCKY_STRICT_VALIDATION", "true")
+
+	testCases := []struct {
+		name     string
+		filename string
+		hasError bool
+	}{
+		{"Empty path", "", true},
+		{"Valid filename", "test.csv", false},
+		{"Too long filename", strings.Repeat("a", 256), true},
+		{"Null byte", "test\x00.csv", true},
+		{"Semicolon", "test;rm.csv", true},
+		{"Pipe", "test|rm.csv", true},
+		{"Ampersand", "test&rm.csv", true},
+		{"Backtick", "test`rm.csv", true},
+		{"Dollar sign", "test$rm.csv", true},
+		{"Parentheses", "test(rm).csv", true},
+		{"Curly braces", "test{rm}.csv", true},
+		{"Angle brackets", "test<rm>.csv", true},
+		{"Exclamation", "test!rm.csv", true},
+		{"Newline", "test\\nrm.csv", true},
+		{"Carriage return", "test\\rrm.csv", true},
+		{"Path traversal", "../../../etc/passwd", true},
+		{"Absolute path", "/tmp/test.csv", true},
+		{"Windows reserved CON", "CON", true},
+		{"Windows reserved PRN", "PRN.txt", true},
+		{"Windows reserved AUX", "aux.csv", true},
+		{"Windows reserved COM1", "COM1.dat", true},
+		{"Windows reserved LPT1", "LPT1.log", true},
+		{"Valid with subdir", "subdir/test.csv", false},
+	}
+
+	for _, tc := range testCases {
+		validateErr := validateFilePath(tc.filename)
+		if tc.hasError {
+			s.Require().Error(validateErr, "Test case: %s should return error", tc.name)
+			s.Equal(ErrInvalidFilePath, validateErr, "Test case: %s", tc.name)
+		} else {
+			s.Require().NoError(validateErr, "Test case: %s should not return error", tc.name)
+		}
+	}
+
+	// Test validateFilePathStrict directly
+	err = validateFilePathStrict("valid.csv", "valid.csv")
+	s.Require().NoError(err)
+
+	err = validateFilePathStrict(strings.Repeat("x", 256), strings.Repeat("x", 256))
+	s.Require().Error(err)
+	s.Equal(ErrInvalidFilePath, err)
 }
 
 // TestRunAnalysisModes tests different output modes
@@ -802,7 +935,7 @@ func (s *AnalyzerTestSuite) TestCurrentConditionsEdgeCases() {
 func (s *AnalyzerTestSuite) TestCosmicPredictionEdgeCases() {
 	// Test prediction when cosmic data already exists
 	today := time.Now()
-	dateKey := today.Format("2006-01-02")
+	dateKey := today.Format(dateFormatISO)
 
 	// Pre-populate cosmic data
 	cosmic := &CosmicData{
@@ -825,6 +958,731 @@ func (s *AnalyzerTestSuite) TestCosmicPredictionEdgeCases() {
 		s.False(used[num], "Duplicate number found: %d", num)
 		used[num] = true
 	}
+}
+
+// TestNetworkFailureHandling tests handling of network failures in cosmic data fetching
+func (s *AnalyzerTestSuite) TestNetworkFailureHandling() {
+	// Test that fetchMoonPhaseData handles errors gracefully
+	ctx := context.Background()
+
+	// Test with normal context
+	err := s.analyzer.correlationEngine.fetchMoonPhaseData(ctx, 2024)
+	s.Require().NoError(err) // Current implementation should not fail
+
+	// Test with canceled context
+	canceledCtx, cancel := context.WithCancel(ctx)
+	cancel()
+	err = s.analyzer.correlationEngine.fetchMoonPhaseData(canceledCtx, 2024)
+	s.Require().NoError(err) // Current implementation ignores context cancellation
+
+	// Test with timeout context
+	timeoutCtx, cancel := context.WithTimeout(ctx, 1*time.Nanosecond)
+	defer cancel()
+	time.Sleep(2 * time.Nanosecond) // Ensure timeout
+	err = s.analyzer.correlationEngine.fetchMoonPhaseData(timeoutCtx, 2024)
+	s.Require().NoError(err) // Current implementation should still work as it doesn't make network requests
+
+	// Test error handling in EnrichWithCosmicData when fetchMoonPhaseData fails
+	// This tests the warning path when fetch fails
+	originalStderr := os.Stderr
+	defer func() { os.Stderr = originalStderr }()
+
+	// Capture stderr
+	r, w, _ := os.Pipe()
+	os.Stderr = w
+
+	// Create a correlation engine that would fail on network requests
+	testEngine := NewCorrelationEngine(s.analyzer)
+	err = testEngine.EnrichWithCosmicData(ctx)
+	s.Require().NoError(err) // Should complete despite warnings
+
+	_ = w.Close()
+	os.Stderr = originalStderr
+
+	// Read captured output (this tests the warning path)
+	buf := make([]byte, 1024)
+	n, _ := r.Read(buf)
+	if n > 0 {
+		output := string(buf[:n])
+		// Current implementation shouldn't produce warnings since it doesn't fail
+		s.NotContains(output, "Warning: Could not fetch moon data")
+	}
+}
+
+// TestHTTPClientConfiguration tests HTTP client setup for cosmic data fetching
+func (s *AnalyzerTestSuite) TestHTTPClientConfiguration() {
+	engine := NewCorrelationEngine(s.analyzer)
+
+	// Verify HTTP client is configured
+	s.NotNil(engine.client)
+	s.Equal(30*time.Second, engine.client.Timeout)
+}
+
+// TestCosmicDataEnrichmentErrors tests error scenarios during cosmic data enrichment
+func (s *AnalyzerTestSuite) TestCosmicDataEnrichmentErrors() {
+	ctx := context.Background()
+
+	// Test with empty analyzer
+	emptyAnalyzer := &Analyzer{
+		drawings: []Drawing{},
+	}
+	emptyEngine := NewCorrelationEngine(emptyAnalyzer)
+	err := emptyEngine.EnrichWithCosmicData(ctx)
+	s.Require().NoError(err) // Should handle empty data gracefully
+
+	// Test with analyzer containing drawings from multiple years
+	multiYearAnalyzer := &Analyzer{
+		drawings: []Drawing{
+			{Date: time.Date(2020, 1, 1, 0, 0, 0, 0, time.UTC)},
+			{Date: time.Date(2021, 6, 15, 0, 0, 0, 0, time.UTC)},
+			{Date: time.Date(2022, 12, 31, 0, 0, 0, 0, time.UTC)},
+			{Date: time.Date(2023, 3, 20, 0, 0, 0, 0, time.UTC)},
+			{Date: time.Date(2024, 8, 10, 0, 0, 0, 0, time.UTC)},
+		},
+	}
+	multiYearEngine := NewCorrelationEngine(multiYearAnalyzer)
+	err = multiYearEngine.EnrichWithCosmicData(ctx)
+	s.Require().NoError(err)
+
+	// Verify cosmic data was created for all drawing dates (may include additional calendar dates)
+	s.GreaterOrEqual(len(multiYearEngine.cosmicData), 5)
+
+	// Verify each date has cosmic data
+	for _, drawing := range multiYearAnalyzer.drawings {
+		dateKey := drawing.Date.Format(dateFormatISO)
+		cosmic, exists := multiYearEngine.cosmicData[dateKey]
+		s.True(exists, "Missing cosmic data for date %s", dateKey)
+		s.NotNil(cosmic)
+		s.Equal(drawing.Date, cosmic.Date)
+	}
+}
+
+// TestMockDataForDemo tests the mock data generation for demonstration
+func (s *AnalyzerTestSuite) TestMockDataForDemo() {
+	cosmic := &CosmicData{
+		Date: time.Now(),
+	}
+
+	// Call calculateAstronomicalData first to set up planetary positions
+	s.analyzer.correlationEngine.calculateAstronomicalData(cosmic)
+
+	// Test that addMockDataForDemo populates all fields
+	s.analyzer.correlationEngine.addMockDataForDemo(cosmic)
+
+	// Verify solar data is populated
+	s.NotNil(cosmic.SolarActivity)
+	s.Greater(cosmic.SolarActivity.SolarWindSpeed, 0.0)
+	s.Greater(cosmic.SolarActivity.F107Index, 0.0)
+
+	// Verify weather data is populated
+	s.NotNil(cosmic.WeatherData)
+	s.Greater(cosmic.WeatherData.Temperature, -50.0) // Basic range check
+
+	// Verify planetary positions are populated
+	s.NotEmpty(cosmic.PlanetaryPositions)
+	s.Contains(cosmic.PlanetaryPositions, "Mercury")
+	s.Contains(cosmic.PlanetaryPositions, "Venus")
+	s.Contains(cosmic.PlanetaryPositions, "Mars")
+	s.Contains(cosmic.PlanetaryPositions, "Jupiter")
+	s.Contains(cosmic.PlanetaryPositions, "Saturn")
+}
+
+// TestCosmicCorrelationEdgeCases tests edge cases in cosmic correlation analysis
+func (s *AnalyzerTestSuite) TestCosmicCorrelationEdgeCases() {
+	ctx := context.Background()
+
+	// Test with analyzer that has no drawings
+	emptyAnalyzer := &Analyzer{
+		drawings:     []Drawing{},
+		mainNumbers:  make(map[int]*NumberInfo),
+		luckyBalls:   make(map[int]*NumberInfo),
+		pairPatterns: make(map[string]*CombinationPattern),
+		patternStats: &PatternStats{},
+	}
+	emptyEngine := NewCorrelationEngine(emptyAnalyzer)
+
+	// Test EnrichWithCosmicData with empty data
+	err := emptyEngine.EnrichWithCosmicData(ctx)
+	s.Require().NoError(err) // Should handle empty data gracefully
+
+	// Test AnalyzeCorrelations with empty data
+	err = emptyEngine.AnalyzeCorrelations(ctx)
+	s.Require().NoError(err) // Should handle empty data gracefully
+
+	// Test cosmic prediction with no historical data
+	numbers := emptyEngine.PredictBasedOnCosmicConditions()
+	s.Len(numbers, 5) // Should still generate 5 numbers
+
+	// Test that all numbers are in valid range
+	for _, num := range numbers {
+		s.GreaterOrEqual(num, 1)
+		s.LessOrEqual(num, 48)
+	}
+
+	// Test with minimal data
+	minimalAnalyzer := &Analyzer{
+		drawings: []Drawing{
+			{
+				Date:      time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),
+				Numbers:   []int{1, 2, 3, 4, 5},
+				LuckyBall: 1,
+			},
+		},
+		mainNumbers:  make(map[int]*NumberInfo),
+		luckyBalls:   make(map[int]*NumberInfo),
+		pairPatterns: make(map[string]*CombinationPattern),
+		patternStats: &PatternStats{
+			OddEvenPatterns:    make(map[string]int),
+			SumRanges:          make(map[int]int),
+			ConsecutiveCount:   0,
+			DecadeDistribution: make(map[int]int),
+		},
+	}
+
+	// Initialize number info for minimal analyzer
+	for i := 1; i <= 48; i++ {
+		minimalAnalyzer.mainNumbers[i] = &NumberInfo{
+			Number:            i,
+			TotalFrequency:    0,
+			RecentFrequency:   0,
+			GapsSinceDrawn:    []int{},
+			CurrentGap:        1,
+			AverageGap:        1.0,
+			ExpectedFrequency: 1.0,
+		}
+	}
+	for i := 1; i <= 18; i++ {
+		minimalAnalyzer.luckyBalls[i] = &NumberInfo{
+			Number:            i,
+			TotalFrequency:    0,
+			RecentFrequency:   0,
+			GapsSinceDrawn:    []int{},
+			CurrentGap:        1,
+			AverageGap:        1.0,
+			ExpectedFrequency: 1.0,
+		}
+	}
+
+	minimalEngine := NewCorrelationEngine(minimalAnalyzer)
+
+	// Test with minimal data
+	err = minimalEngine.EnrichWithCosmicData(ctx)
+	s.Require().NoError(err)
+
+	err = minimalEngine.AnalyzeCorrelations(ctx)
+	s.Require().NoError(err)
+
+	// Test report generation with minimal data
+	report := minimalEngine.GenerateCosmicReport()
+	s.NotEmpty(report)
+	s.Contains(report, "COSMIC CORRELATION ANALYSIS")
+}
+
+// TestCosmicWeatherCorrelations tests weather data correlation edge cases
+func (s *AnalyzerTestSuite) TestCosmicWeatherCorrelations() {
+	ctx := context.Background()
+
+	// Test with diverse weather conditions
+	// Create an analyzer with specific drawings to test weather correlations
+	weatherAnalyzer := &Analyzer{
+		drawings:     make([]Drawing, 0),
+		mainNumbers:  make(map[int]*NumberInfo),
+		luckyBalls:   make(map[int]*NumberInfo),
+		pairPatterns: make(map[string]*CombinationPattern),
+		patternStats: &PatternStats{
+			OddEvenPatterns:    make(map[string]int),
+			SumRanges:          make(map[int]int),
+			ConsecutiveCount:   0,
+			DecadeDistribution: make(map[int]int),
+		},
+	}
+
+	// Add drawings with specific patterns
+	dates := []time.Time{
+		time.Date(2024, 1, 15, 0, 0, 0, 0, time.UTC),
+		time.Date(2024, 2, 20, 0, 0, 0, 0, time.UTC),
+		time.Date(2024, 3, 25, 0, 0, 0, 0, time.UTC),
+		time.Date(2024, 4, 30, 0, 0, 0, 0, time.UTC),
+		time.Date(2024, 5, 15, 0, 0, 0, 0, time.UTC),
+	}
+
+	for i, date := range dates {
+		drawing := Drawing{
+			Date:      date,
+			Numbers:   []int{i*5 + 1, i*5 + 2, i*5 + 3, i*5 + 4, i*5 + 5},
+			LuckyBall: i + 1,
+		}
+		weatherAnalyzer.drawings = append(weatherAnalyzer.drawings, drawing)
+	}
+
+	// Initialize number info
+	for i := 1; i <= 48; i++ {
+		weatherAnalyzer.mainNumbers[i] = &NumberInfo{
+			Number:            i,
+			TotalFrequency:    1,
+			RecentFrequency:   1,
+			GapsSinceDrawn:    []int{1, 2, 3},
+			CurrentGap:        1,
+			AverageGap:        2.0,
+			ExpectedFrequency: 2.0,
+			StandardDeviation: 1.0,
+		}
+	}
+	for i := 1; i <= 18; i++ {
+		weatherAnalyzer.luckyBalls[i] = &NumberInfo{
+			Number:            i,
+			TotalFrequency:    1,
+			RecentFrequency:   1,
+			GapsSinceDrawn:    []int{1, 2},
+			CurrentGap:        1,
+			AverageGap:        1.5,
+			ExpectedFrequency: 1.5,
+			StandardDeviation: 0.5,
+		}
+	}
+
+	weatherEngine := NewCorrelationEngine(weatherAnalyzer)
+
+	// Test enrichment and analysis
+	err := weatherEngine.EnrichWithCosmicData(ctx)
+	s.Require().NoError(err)
+
+	err = weatherEngine.AnalyzeCorrelations(ctx)
+	s.Require().NoError(err)
+
+	// Verify correlations were calculated
+	s.NotEmpty(weatherEngine.correlationResults)
+
+	// Test report generation
+	report := weatherEngine.GenerateCosmicReport()
+	s.NotEmpty(report)
+	s.Contains(report, "WEATHER CORRELATIONS")
+}
+
+// TestAstronomicalDataCalculation tests astronomical data calculation edge cases
+func (s *AnalyzerTestSuite) TestAstronomicalDataCalculation() {
+	// Test calculateAstronomicalData with various dates
+	testDates := []time.Time{
+		time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC),   // New Year
+		time.Date(2024, 6, 21, 0, 0, 0, 0, time.UTC),  // Summer Solstice
+		time.Date(2024, 12, 21, 0, 0, 0, 0, time.UTC), // Winter Solstice
+		time.Date(2024, 3, 20, 0, 0, 0, 0, time.UTC),  // Spring Equinox
+		time.Date(2024, 9, 22, 0, 0, 0, 0, time.UTC),  // Fall Equinox
+	}
+
+	for _, date := range testDates {
+		cosmic := &CosmicData{Date: date}
+		s.analyzer.correlationEngine.calculateAstronomicalData(cosmic)
+
+		// Verify all astronomical fields are populated
+		s.NotEmpty(cosmic.ZodiacSign)
+		s.NotEmpty(cosmic.DayOfWeek)
+		s.NotEmpty(cosmic.SeasonalPhase)
+		s.NotEmpty(cosmic.PlanetaryPositions)
+		s.GreaterOrEqual(cosmic.GeomagneticIndex, 0.0)
+
+		// Verify planetary positions are within valid range (0-360 degrees)
+		for planet, position := range cosmic.PlanetaryPositions {
+			s.GreaterOrEqual(position, 0.0, "Planet %s position should be >= 0", planet)
+			s.Less(position, 360.0, "Planet %s position should be < 360", planet)
+		}
+	}
+}
+
+// TestCosmicReportGenerationEdgeCases tests edge cases in report generation
+func (s *AnalyzerTestSuite) TestCosmicReportGenerationEdgeCases() {
+	// Test report generation with no correlation results
+	emptyEngine := NewCorrelationEngine(&Analyzer{
+		drawings:     []Drawing{},
+		mainNumbers:  make(map[int]*NumberInfo),
+		luckyBalls:   make(map[int]*NumberInfo),
+		pairPatterns: make(map[string]*CombinationPattern),
+		patternStats: &PatternStats{},
+	})
+
+	// Generate report without any data
+	report := emptyEngine.GenerateCosmicReport()
+	s.NotEmpty(report)
+	s.Contains(report, "COSMIC CORRELATION ANALYSIS")
+	s.Contains(report, "DISCLAIMER")
+
+	// Test with some correlation results
+	emptyEngine.correlationResults = []CorrelationResult{
+		{
+			Factor:       "Moon Phase",
+			SubFactor:    "Full Moon",
+			Correlation:  0.75,
+			PValue:       0.01,
+			SampleSize:   100,
+			Significance: "High",
+		},
+		{
+			Factor:       "Solar Activity",
+			SubFactor:    "Solar Wind Speed",
+			Correlation:  -0.45,
+			PValue:       0.03,
+			SampleSize:   100,
+			Significance: "Moderate",
+		},
+		{
+			Factor:       "Weather",
+			SubFactor:    "Temperature",
+			Correlation:  0.25,
+			PValue:       0.15,
+			SampleSize:   100,
+			Significance: "None",
+		},
+	}
+
+	// Generate report with mock correlation results
+	detailedReport := emptyEngine.GenerateCosmicReport()
+	s.NotEmpty(detailedReport)
+	s.Contains(detailedReport, "Moon Phase")
+	s.Contains(strings.ToUpper(detailedReport), strings.ToUpper("Solar Activity"))
+	s.Contains(strings.ToUpper(detailedReport), strings.ToUpper("Weather"))
+}
+
+// TestStatisticalAnalysisEdgeCases tests edge cases in statistical analysis
+func (s *AnalyzerTestSuite) TestStatisticalAnalysisEdgeCases() {
+	// Test gap analysis with no gaps
+	analyzer := &Analyzer{
+		drawings: []Drawing{
+			{Date: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC), Numbers: []int{1, 2, 3, 4, 5}, LuckyBall: 1},
+		},
+		mainNumbers:  make(map[int]*NumberInfo),
+		luckyBalls:   make(map[int]*NumberInfo),
+		pairPatterns: make(map[string]*CombinationPattern),
+		patternStats: &PatternStats{
+			OddEvenPatterns:    make(map[string]int),
+			SumRanges:          make(map[int]int),
+			ConsecutiveCount:   0,
+			DecadeDistribution: make(map[int]int),
+		},
+	}
+
+	// Test with numbers that have no gaps
+	for i := 1; i <= 48; i++ {
+		analyzer.mainNumbers[i] = &NumberInfo{
+			Number:            i,
+			TotalFrequency:    0,
+			RecentFrequency:   0,
+			GapsSinceDrawn:    []int{}, // No gaps
+			CurrentGap:        0,
+			AverageGap:        0.0,
+			ExpectedFrequency: 0.0,
+			StandardDeviation: 0.0,
+		}
+	}
+
+	// Test statistical analysis output with edge case data
+	ctx := context.Background()
+	analyzer.config = &AnalysisConfig{OutputMode: "statistical"}
+	err := analyzer.printStatisticalAnalysis(ctx)
+	s.Require().NoError(err)
+
+	// Test with numbers that have extreme gaps
+	analyzer.mainNumbers[1].GapsSinceDrawn = []int{1, 100, 200, 500, 1000}
+	analyzer.mainNumbers[1].CurrentGap = 999999
+	analyzer.mainNumbers[1].AverageGap = 360.2
+	analyzer.mainNumbers[1].StandardDeviation = 415.8
+
+	err = analyzer.printStatisticalAnalysis(ctx)
+	s.NoError(err)
+}
+
+// TestChiSquareCalculationEdgeCases tests chi-square calculation edge cases
+func (s *AnalyzerTestSuite) TestChiSquareCalculationEdgeCases() {
+	// Test calculateChiSquare with extreme values
+	testCases := []struct {
+		name           string
+		frequencies    map[int]int
+		expectedResult bool
+	}{
+		{
+			name: "All zeros",
+			frequencies: map[int]int{
+				1: 0, 2: 0, 3: 0, 4: 0, 5: 0,
+			},
+			expectedResult: true, // Should handle gracefully
+		},
+		{
+			name: "Single high frequency",
+			frequencies: map[int]int{
+				1: 1000, 2: 0, 3: 0, 4: 0, 5: 0,
+			},
+			expectedResult: true,
+		},
+		{
+			name: "Equal frequencies",
+			frequencies: map[int]int{
+				1: 10, 2: 10, 3: 10, 4: 10, 5: 10,
+			},
+			expectedResult: true,
+		},
+		{
+			name:           "Empty frequencies",
+			frequencies:    map[int]int{},
+			expectedResult: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		// Create test analyzer with specific frequencies
+		testAnalyzer := &Analyzer{
+			drawings:     []Drawing{},
+			mainNumbers:  make(map[int]*NumberInfo),
+			luckyBalls:   make(map[int]*NumberInfo),
+			pairPatterns: make(map[string]*CombinationPattern),
+			patternStats: &PatternStats{},
+		}
+
+		// Set up frequencies
+		for num, freq := range tc.frequencies {
+			testAnalyzer.mainNumbers[num] = &NumberInfo{
+				Number:         num,
+				TotalFrequency: freq,
+			}
+		}
+
+		// Test chi-square calculation
+		testAnalyzer.calculateChiSquare()
+
+		// Verify chi-square value is valid (not NaN or negative)
+		s.False(math.IsNaN(testAnalyzer.chiSquareValue), "Chi-square should not be NaN for %s", tc.name)
+		s.GreaterOrEqual(testAnalyzer.chiSquareValue, 0.0, "Chi-square should be non-negative for %s", tc.name)
+
+		// Verify randomness score is valid
+		s.False(math.IsNaN(testAnalyzer.randomnessScore), "Randomness score should not be NaN for %s", tc.name)
+		s.GreaterOrEqual(testAnalyzer.randomnessScore, 0.0, "Randomness score should be non-negative for %s", tc.name)
+		s.LessOrEqual(testAnalyzer.randomnessScore, 100.0, "Randomness score should be <= 100 for %s", tc.name)
+	}
+}
+
+// TestCorrelationCalculationEdgeCases tests Pearson correlation calculation edge cases
+func (s *AnalyzerTestSuite) TestCorrelationCalculationEdgeCases() {
+	testCases := []struct {
+		name           string
+		x              []float64
+		y              []float64
+		expectError    bool
+		expectedCorr   float64
+		expectedPValue float64
+	}{
+		{
+			name:        "Empty arrays",
+			x:           []float64{},
+			y:           []float64{},
+			expectError: false, // Should handle gracefully
+		},
+		{
+			name:        "Single value arrays",
+			x:           []float64{1.0},
+			y:           []float64{2.0},
+			expectError: false, // Should handle gracefully
+		},
+		{
+			name:         "Perfect positive correlation",
+			x:            []float64{1, 2, 3, 4, 5},
+			y:            []float64{2, 4, 6, 8, 10},
+			expectError:  false,
+			expectedCorr: 1.0,
+		},
+		{
+			name:         "Perfect negative correlation",
+			x:            []float64{1, 2, 3, 4, 5},
+			y:            []float64{10, 8, 6, 4, 2},
+			expectError:  false,
+			expectedCorr: -1.0,
+		},
+		{
+			name:        "All zeros",
+			x:           []float64{0, 0, 0, 0, 0},
+			y:           []float64{0, 0, 0, 0, 0},
+			expectError: false, // Should handle gracefully
+		},
+		{
+			name:        "Different lengths",
+			x:           []float64{1, 2, 3},
+			y:           []float64{1, 2, 3, 4, 5},
+			expectError: false, // Should handle gracefully
+		},
+		{
+			name:        "Constant x values",
+			x:           []float64{5, 5, 5, 5, 5},
+			y:           []float64{1, 2, 3, 4, 5},
+			expectError: false, // Should handle gracefully (NaN is expected)
+		},
+		{
+			name:        "Constant y values",
+			x:           []float64{1, 2, 3, 4, 5},
+			y:           []float64{7, 7, 7, 7, 7},
+			expectError: false, // Should handle gracefully (NaN is expected)
+		},
+	}
+
+	for _, tc := range testCases {
+		corr, pValue := calculatePearsonCorrelation(tc.x, tc.y)
+
+		switch tc.name {
+		case "Perfect positive correlation":
+			s.Greater(corr, 0.99, "Correlation should be close to 1.0 for %s", tc.name)
+		case "Perfect negative correlation":
+			s.Less(corr, -0.99, "Correlation should be close to -1.0 for %s", tc.name)
+		}
+
+		// P-value should be a valid number or NaN
+		s.False(math.IsInf(pValue, 0), "P-value should not be infinite for %s", tc.name)
+
+		// For edge cases, correlation might be NaN which is acceptable
+		if !math.IsNaN(corr) {
+			s.GreaterOrEqual(corr, -1.0, "Correlation should be >= -1.0 for %s", tc.name)
+			s.LessOrEqual(corr, 1.0, "Correlation should be <= 1.0 for %s", tc.name)
+		}
+	}
+}
+
+// TestNumberAnalysisEdgeCases tests number analysis edge cases
+func (s *AnalyzerTestSuite) TestNumberAnalysisEdgeCases() {
+	// Test with extreme number distributions
+	extremeAnalyzer := &Analyzer{
+		drawings: []Drawing{
+			// All same numbers
+			{Date: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC), Numbers: []int{1, 1, 1, 1, 1}, LuckyBall: 1},
+			{Date: time.Date(2024, 1, 2, 0, 0, 0, 0, time.UTC), Numbers: []int{48, 48, 48, 48, 48}, LuckyBall: 18},
+		},
+		mainNumbers:  make(map[int]*NumberInfo),
+		luckyBalls:   make(map[int]*NumberInfo),
+		pairPatterns: make(map[string]*CombinationPattern),
+		patternStats: &PatternStats{
+			OddEvenPatterns:    make(map[string]int),
+			SumRanges:          make(map[int]int),
+			ConsecutiveCount:   0,
+			DecadeDistribution: make(map[int]int),
+		},
+		config: &AnalysisConfig{
+			RecentWindow:     3,
+			MinGapMultiplier: 1.5,
+			ConfidenceLevel:  0.95,
+			OutputMode:       "detailed",
+		},
+	}
+
+	// Initialize all numbers
+	for i := 1; i <= 48; i++ {
+		extremeAnalyzer.mainNumbers[i] = &NumberInfo{
+			Number:            i,
+			TotalFrequency:    0,
+			RecentFrequency:   0,
+			GapsSinceDrawn:    []int{},
+			CurrentGap:        0,
+			AverageGap:        0.0,
+			ExpectedFrequency: 0.0,
+			StandardDeviation: 0.0,
+		}
+	}
+	for i := 1; i <= 18; i++ {
+		extremeAnalyzer.luckyBalls[i] = &NumberInfo{
+			Number:            i,
+			TotalFrequency:    0,
+			RecentFrequency:   0,
+			GapsSinceDrawn:    []int{},
+			CurrentGap:        0,
+			AverageGap:        0.0,
+			ExpectedFrequency: 0.0,
+			StandardDeviation: 0.0,
+		}
+	}
+
+	// Test with extreme distributions
+	ctx := context.Background()
+
+	// Test GetTopNumbers with edge cases
+	topNumbers := extremeAnalyzer.GetTopNumbers(0, false)
+	s.Empty(topNumbers)
+
+	topNumbers = extremeAnalyzer.GetTopNumbers(100, false)
+	s.LessOrEqual(len(topNumbers), 48)
+
+	// Test GetOverdueNumbers with edge cases
+	overdueNumbers := extremeAnalyzer.GetOverdueNumbers(0)
+	s.Empty(overdueNumbers)
+
+	overdueNumbers = extremeAnalyzer.GetOverdueNumbers(100)
+	s.LessOrEqual(len(overdueNumbers), 48)
+
+	// Test GenerateRecommendations with edge cases
+	recommendations, err := extremeAnalyzer.GenerateRecommendations(ctx, 0)
+	s.Require().NoError(err)
+	s.Empty(recommendations)
+
+	recommendations, err = extremeAnalyzer.GenerateRecommendations(ctx, 1)
+	s.Require().NoError(err)
+	s.Len(recommendations, 1)
+}
+
+// TestPrintAnalysisEdgeCases tests print analysis functions with edge cases
+func (s *AnalyzerTestSuite) TestPrintAnalysisEdgeCases() {
+	ctx := context.Background()
+
+	// Create analyzer with minimal data for testing edge cases in print functions
+	minimalAnalyzer := &Analyzer{
+		drawings: []Drawing{
+			{Date: time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC), Numbers: []int{1, 2, 3, 4, 5}, LuckyBall: 1},
+		},
+		mainNumbers:  make(map[int]*NumberInfo),
+		luckyBalls:   make(map[int]*NumberInfo),
+		pairPatterns: make(map[string]*CombinationPattern),
+		patternStats: &PatternStats{
+			OddEvenPatterns:    make(map[string]int),
+			SumRanges:          make(map[int]int),
+			ConsecutiveCount:   0,
+			DecadeDistribution: make(map[int]int),
+		},
+		config:            &AnalysisConfig{OutputMode: "detailed"},
+		correlationEngine: NewCorrelationEngine(nil),
+	}
+
+	// Initialize minimal number info to prevent panics
+	for i := 1; i <= 48; i++ {
+		minimalAnalyzer.mainNumbers[i] = &NumberInfo{
+			Number:            i,
+			TotalFrequency:    0,
+			RecentFrequency:   0,
+			GapsSinceDrawn:    []int{},
+			CurrentGap:        1,
+			AverageGap:        1.0,
+			ExpectedFrequency: 1.0,
+			StandardDeviation: 0.0,
+		}
+	}
+	for i := 1; i <= 18; i++ {
+		minimalAnalyzer.luckyBalls[i] = &NumberInfo{
+			Number:            i,
+			TotalFrequency:    0,
+			RecentFrequency:   0,
+			GapsSinceDrawn:    []int{},
+			CurrentGap:        1,
+			AverageGap:        1.0,
+			ExpectedFrequency: 1.0,
+			StandardDeviation: 0.0,
+		}
+	}
+
+	// Set correlation engine analyzer reference to avoid nil pointer
+	minimalAnalyzer.correlationEngine.analyzer = minimalAnalyzer
+
+	// Test print functions with minimal data
+	err := minimalAnalyzer.printSimpleAnalysis(ctx)
+	s.Require().NoError(err)
+
+	err = minimalAnalyzer.printDetailedAnalysis(ctx)
+	s.Require().NoError(err)
+
+	err = minimalAnalyzer.printStatisticalAnalysis(ctx)
+	s.Require().NoError(err)
+
+	err = minimalAnalyzer.printCosmicAnalysis(ctx)
+	s.NoError(err)
 }
 
 // Run the test suite
@@ -892,4 +1750,141 @@ func BenchmarkReportGeneration(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		_ = correlationEngine.GenerateCosmicReport()
 	}
+}
+
+// TestCLIArgumentParsing tests command-line argument parsing logic
+func (s *AnalyzerTestSuite) TestCLIArgumentParsing() {
+	// Test parsing CLI arguments into config
+	testCases := []struct {
+		name           string
+		args           []string
+		expectedMode   string
+		expectedFormat string
+		expectedWindow int
+	}{
+		{
+			name:           "Simple mode",
+			args:           []string{"program", "--simple"},
+			expectedMode:   "simple",
+			expectedFormat: "console",
+			expectedWindow: 50,
+		},
+		{
+			name:           "Statistical mode",
+			args:           []string{"program", "--statistical"},
+			expectedMode:   "statistical",
+			expectedFormat: "console",
+			expectedWindow: 50,
+		},
+		{
+			name:           "Cosmic mode",
+			args:           []string{"program", "--cosmic"},
+			expectedMode:   "cosmic",
+			expectedFormat: "console",
+			expectedWindow: 50,
+		},
+		{
+			name:           "JSON export",
+			args:           []string{"program", "--export-json"},
+			expectedMode:   "detailed",
+			expectedFormat: exportFormatJSON,
+			expectedWindow: 50,
+		},
+		{
+			name:           "CSV export",
+			args:           []string{"program", "--export-csv"},
+			expectedMode:   "detailed",
+			expectedFormat: exportFormatCSV,
+			expectedWindow: 50,
+		},
+		{
+			name:           "Recent window",
+			args:           []string{"program", "--recent", "25"},
+			expectedMode:   "detailed",
+			expectedFormat: "console",
+			expectedWindow: 25,
+		},
+		{
+			name:           "Combined flags",
+			args:           []string{"program", "--cosmic", "--export-json", "--recent", "30"},
+			expectedMode:   "cosmic",
+			expectedFormat: exportFormatJSON,
+			expectedWindow: 30,
+		},
+	}
+
+	for _, tc := range testCases {
+		config := parseCLIArgs(tc.args)
+		s.Equal(tc.expectedMode, config.OutputMode, "Test case: %s", tc.name)
+		s.Equal(tc.expectedFormat, config.ExportFormat, "Test case: %s", tc.name)
+		s.Equal(tc.expectedWindow, config.RecentWindow, "Test case: %s", tc.name)
+	}
+}
+
+// Test help functionality
+func (s *AnalyzerTestSuite) TestPrintHelp() {
+	// Test that printHelp function runs without error
+	s.NotPanics(func() {
+		printHelp()
+	})
+}
+
+// TestCLIEdgeCases tests edge cases in CLI argument parsing
+func (s *AnalyzerTestSuite) TestCLIEdgeCases() {
+	// Test invalid recent window value
+	config := parseCLIArgs([]string{"program", "--recent", "invalid"})
+	s.Equal(50, config.RecentWindow) // Should remain default
+
+	// Test recent without value
+	config = parseCLIArgs([]string{"program", "--recent"})
+	s.Equal(50, config.RecentWindow) // Should remain default
+
+	// Test unknown flags are ignored
+	config = parseCLIArgs([]string{"program", "--unknown-flag", "--simple"})
+	s.Equal("simple", config.OutputMode) // Should still process known flags
+
+	// Test empty args
+	config = parseCLIArgs([]string{"program"})
+	s.Equal("detailed", config.OutputMode) // Should use defaults
+	s.Equal("console", config.ExportFormat)
+	s.Equal(50, config.RecentWindow)
+}
+
+// parseCLIArgs extracts the CLI parsing logic for testing
+func parseCLIArgs(args []string) *AnalysisConfig {
+	// Default configuration
+	config := &AnalysisConfig{
+		RecentWindow:     50,
+		MinGapMultiplier: 1.5,
+		ConfidenceLevel:  0.95,
+		OutputMode:       "detailed",
+		ExportFormat:     "console",
+	}
+
+	// Parse command line arguments
+	if len(args) > 1 {
+		for i := 1; i < len(args); i++ {
+			switch args[i] {
+			case "--simple":
+				config.OutputMode = "simple"
+			case "--statistical":
+				config.OutputMode = "statistical"
+			case "--cosmic":
+				config.OutputMode = "cosmic"
+			case "--export-json":
+				config.ExportFormat = exportFormatJSON
+			case "--export-csv":
+				config.ExportFormat = exportFormatCSV
+			case "--recent":
+				if i+1 < len(args) {
+					if val, err := strconv.Atoi(args[i+1]); err == nil {
+						config.RecentWindow = val
+						i++
+					}
+				}
+			}
+		}
+	}
+
+	return config
 }

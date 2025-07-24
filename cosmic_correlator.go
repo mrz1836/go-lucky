@@ -1,4 +1,3 @@
-// Package main implements cosmic correlation analysis for lottery data
 package main
 
 import (
@@ -8,6 +7,11 @@ import (
 	"net/http"
 	"os"
 	"time"
+)
+
+const (
+	// Date format constant for consistency across cosmic correlation analysis
+	dateFormatISO = "2006-01-02"
 )
 
 // CosmicData represents astronomical and environmental data for a given date
@@ -96,7 +100,7 @@ func (ce *CorrelationEngine) EnrichWithCosmicData(ctx context.Context) error { /
 
 	// Calculate local astronomical data
 	for _, drawing := range ce.analyzer.drawings {
-		dateKey := drawing.Date.Format("2006-01-02")
+		dateKey := drawing.Date.Format(dateFormatISO)
 
 		if _, exists := ce.cosmicData[dateKey]; !exists {
 			ce.cosmicData[dateKey] = &CosmicData{
@@ -127,7 +131,7 @@ func (ce *CorrelationEngine) fetchMoonPhaseData(_ context.Context, year int) err
 	endDate := time.Date(year, 12, 31, 0, 0, 0, 0, time.UTC)
 
 	for d := startDate; d.Before(endDate) || d.Equal(endDate); d = d.AddDate(0, 0, 1) {
-		dateKey := d.Format("2006-01-02")
+		dateKey := d.Format(dateFormatISO)
 		phase, illumination := ce.calculateMoonPhase(d)
 
 		if ce.cosmicData[dateKey] == nil {
@@ -384,7 +388,7 @@ func (ce *CorrelationEngine) analyzeMoonPhaseCorrelations() {
 
 	// Analyze correlation between moon phase and average number value
 	for _, drawing := range ce.analyzer.drawings {
-		dateKey := drawing.Date.Format("2006-01-02")
+		dateKey := drawing.Date.Format(dateFormatISO)
 		if cosmic, exists := ce.cosmicData[dateKey]; exists {
 			moonPhases = append(moonPhases, cosmic.MoonPhase)
 
@@ -426,7 +430,7 @@ func (ce *CorrelationEngine) analyzeSpecificMoonPhases() {
 
 	// Group numbers by moon phase
 	for _, drawing := range ce.analyzer.drawings {
-		dateKey := drawing.Date.Format("2006-01-02")
+		dateKey := drawing.Date.Format(dateFormatISO)
 		if cosmic, exists := ce.cosmicData[dateKey]; exists {
 			if group, ok := phaseGroups[cosmic.MoonPhaseName]; ok {
 				phaseGroups[cosmic.MoonPhaseName] = append(group, drawing.Numbers...)
@@ -472,7 +476,7 @@ func (ce *CorrelationEngine) analyzeSolarActivityCorrelations() {
 	var highNumbers []float64 // Count of numbers > 30
 
 	for _, drawing := range ce.analyzer.drawings {
-		dateKey := drawing.Date.Format("2006-01-02")
+		dateKey := drawing.Date.Format(dateFormatISO)
 		if cosmic, exists := ce.cosmicData[dateKey]; exists && cosmic.SolarActivity != nil {
 			solarWindSpeeds = append(solarWindSpeeds, cosmic.SolarActivity.SolarWindSpeed)
 
@@ -506,7 +510,7 @@ func (ce *CorrelationEngine) analyzeWeatherCorrelations() {
 	var evenOddRatios []float64
 
 	for _, drawing := range ce.analyzer.drawings {
-		dateKey := drawing.Date.Format("2006-01-02")
+		dateKey := drawing.Date.Format(dateFormatISO)
 		if cosmic, exists := ce.cosmicData[dateKey]; exists && cosmic.WeatherData != nil {
 			temperatures = append(temperatures, cosmic.WeatherData.Temperature)
 
@@ -553,7 +557,7 @@ func (ce *CorrelationEngine) analyzeTemporalCorrelations() {
 
 	// Collect frequencies
 	for _, drawing := range ce.analyzer.drawings {
-		dateKey := drawing.Date.Format("2006-01-02")
+		dateKey := drawing.Date.Format(dateFormatISO)
 		if cosmic, exists := ce.cosmicData[dateKey]; exists {
 			// Day of week frequencies
 			if dayMap, ok := dayFrequencies[cosmic.DayOfWeek]; ok {
@@ -597,7 +601,7 @@ func (ce *CorrelationEngine) analyzePlanetaryCorrelations() {
 	normalHighNumbers := 0
 
 	for _, drawing := range ce.analyzer.drawings {
-		dateKey := drawing.Date.Format("2006-01-02")
+		dateKey := drawing.Date.Format(dateFormatISO)
 		if cosmic, exists := ce.cosmicData[dateKey]; exists && cosmic.PlanetaryPositions != nil {
 			// Simplified Mercury retrograde detection
 			mercuryPos := cosmic.PlanetaryPositions["Mercury"]
@@ -903,7 +907,7 @@ func (ce *CorrelationEngine) generateCosmicFunFacts() string {
 // PredictBasedOnCosmicConditions generates predictions based on current cosmic conditions
 func (ce *CorrelationEngine) PredictBasedOnCosmicConditions() []int {
 	today := time.Now()
-	dateKey := today.Format("2006-01-02")
+	dateKey := today.Format(dateFormatISO)
 
 	// Get or calculate current cosmic conditions
 	var cosmic *CosmicData

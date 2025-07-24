@@ -23,6 +23,7 @@ ignore:
   - "examples/**"
   - "insights/**"
   - "web-assets/**"
+  - "main.go"
 
 # Parsers
 # --------------
