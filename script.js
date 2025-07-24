@@ -81,44 +81,16 @@ function initializeInteractivity() {
 // Animation functions
 function initializeAnimations() {
     // Stagger animation for feature cards
-    const featureCards = document.querySelectorAll('.feature-card');
-    featureCards.forEach((card, index) => {
-        card.style.animationDelay = `${index * 0.1}s`;
-        card.classList.add('animate-fade-in-up');
-    });
-    
-    // Parallax effect for hero background
-    let ticking = false;
-    
-    function updateParallax() {
-        const scrolled = window.pageYOffset;
-        const parallax = document.querySelector('.hero-background');
-        if (parallax) {
-            const speed = scrolled * 0.5;
-            parallax.style.transform = `translateY(${speed}px)`;
-        }
-        ticking = false;
-    }
-    
-    function requestTick() {
-        if (!ticking) {
-            requestAnimationFrame(updateParallax);
-            ticking = true;
-        }
-    }
-    
-    window.addEventListener('scroll', requestTick);
-    
-    // Update cosmic particles animation
-    updateCosmicParticles();
-    
     // Animate numbers on page load for visible elements
     setTimeout(() => {
         const visibleStats = document.querySelectorAll('.stat-number');
         visibleStats.forEach(stat => {
             const rect = stat.getBoundingClientRect();
             if (rect.top < window.innerHeight && rect.bottom > 0) {
-                animateNumbers(stat);
+                // Don't animate the hero stats - they should show correct values
+                if (!stat.closest('.hero-stats')) {
+                    animateNumbers(stat);
+                }
             }
         });
     }, 500);
@@ -127,6 +99,12 @@ function initializeAnimations() {
 // Animation utilities
 function animateNumbers(element) {
     const text = element.textContent;
+    
+    // Skip animation for hero stats - they should show the correct static values
+    if (element.closest('.hero-stats')) {
+        return;
+    }
+    
     const number = parseFloat(text.replace(/[^\d.]/g, ''));
     
     if (isNaN(number)) return;
