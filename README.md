@@ -312,25 +312,25 @@ The cosmic correlation analysis is designed to **demonstrate** why external fact
 **Solar Activity & Space Weather**
 ```
 ☀️ Solar Wind Speed    → High number frequency correlation
-🌪️ Geomagnetic Storms → Consecutive number pair analysis
-⚡ Solar Flares       → Even/odd ratio variations
-🛡️ Cosmic Ray Flux    → Pattern disruption detection
+🌪️ Geomagnetic Storms  → Consecutive number pair analysis
+⚡ Solar Flares         → Even/odd ratio variations
+🛡️ Cosmic Ray Flux     → Pattern disruption detection
 ```
 
 **Weather & Environmental Factors**
 ```
-🌡️ Temperature    → Even/odd number correlations
-🌧️ Precipitation → Sum range variations
-💨 Wind Speed     → Number clustering analysis
-☁️ Cloud Cover   → Drawing timing correlations
+🌡️ Temperature     → Even/odd number correlations
+🌧️ Precipitation   → Sum range variations
+💨 Wind Speed      → Number clustering analysis
+☁️ Cloud Cover     → Drawing timing correlations
 ```
 
 **Planetary Positions & Astronomy**
 ```
-☿️ Mercury Retrograde → Communication number patterns
-♃ Jupiter Position   → "Lucky" number amplification
-♄ Saturn Transit    → Conservative number selection
-🌍 Earth Seasons     → Temporal pattern analysis
+☿️ Mercury Retrograde  → Communication number patterns
+♃ Jupiter Position    → "Lucky" number amplification
+♄ Saturn Transit      → Conservative number selection
+🌍 Earth Seasons      → Temporal pattern analysis
 ```
 
 ### 📊 Typical Findings

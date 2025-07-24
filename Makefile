@@ -17,14 +17,13 @@ COVERAGE_FILE=coverage.out
 # PHONY targets
 .PHONY: clean full-analysis simple statistical cosmic export-json export-csv
 
-
 ##@ Analysis Commands
 
 ## full-analysis: 🌟 Run COMPLETE analysis with cosmic correlations (RECOMMENDED)
 full-analysis: ## Run full analysis with cosmic correlations
 	@$(MAKE) build-go
 	@echo "╔══════════════════════════════════════════════════════════════╗"
-	@echo "║        🌌 RUNNING FULL COSMIC LOTTERY ANALYSIS 🌌             ║"
+	@echo "║        🌌 RUNNING FULL COSMIC LOTTERY ANALYSIS 🌌            ║"
 	@echo "╚══════════════════════════════════════════════════════════════╝"
 	@echo ""
 	@./bin/$(BINARY_NAME) --cosmic
@@ -71,7 +70,7 @@ clean: ## Clean up build artifacts and generated files
 	@rm -f test_*.csv debug_*.csv empty_*.csv invalid_*.csv
 	@echo "✅ Cleanup complete"
 
-## benchmark: Run performance benchmarks  
+## benchmark: Run performance benchmarks
 benchmark: ## Run performance benchmarks
 	@$(MAKE) bench
 

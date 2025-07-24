@@ -17,13 +17,16 @@ Additional `AGENTS.md` files **may exist in subdirectories** to provide more con
 <br/>
 
 ## 📁 Directory Structure
-| Directory        | Description                                                                       |
-|------------------|-----------------------------------------------------------------------------------|
-| `.github/`       | Issue templates, workflows, and community documentation                           |
-| `.vscode/`       | VS Code settings and extensions for development                                   |
-| `.make/`         | Shared Makefile targets used by `Makefile`                                        |
-| `examples/`      | Example program demonstrating package usage                                       |
-| `.` (root)       | Source files and tests for the local package                                      |
+| Directory     | Description                                                               |
+|---------------|---------------------------------------------------------------------------|
+| `.github/`    | Issue templates, workflows, and community documentation                   |
+| `.vscode/`    | VS Code settings and extensions for development                           |
+| `.make/`      | Shared Makefile targets used by `Makefile`                                |
+| `examples/`   | Example program demonstrating package usage                               |
+| `docs/`       | Any additional documentation, guides, or design documents for the project |
+| `testdata/`   | Test data files used by unit tests and fuzz tests                         |
+| `web-assets/` | Static assets for web applications, if applicable                         |
+| `.` (root)    | Source files and tests for the local package                              |
 
 <br/>
 
