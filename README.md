@@ -213,6 +213,15 @@ make benchmark
 go test -run TestAnalyzerSuite/TestCosmicCorrelations -v
 ```
 
+### Local Development
+
+```bash
+# Serve the website using Node.js
+npx serve . -p 8000
+
+# Then visit http://localhost:8000
+```
+
 ### Adding Features
 1. Follow conventions in `tech-conventions.md`
 2. Use context-first design
