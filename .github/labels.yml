@@ -43,6 +43,9 @@
 - name: "idea"
   description: "Any idea, suggestion"
   color: cccccc
+- name: "npm"
+  description: "Used for referencing npm packages and dependencies"
+  color: 006b75
 - name: "performance"
   description: "Performance improvements or optimizations"
   color: 8bc34a
