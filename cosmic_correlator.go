@@ -314,6 +314,10 @@ func (ce *CorrelationEngine) calculatePlanetaryPositions(date time.Time) map[str
 	// Calculate approximate positions
 	for planet, period := range periods {
 		angle := math.Mod(daysSinceJ2000*360.0/period, 360.0)
+		// Ensure positive angle
+		if angle < 0 {
+			angle += 360.0
+		}
 		positions[planet] = angle
 	}
 
@@ -687,6 +691,9 @@ func getSignificanceLevel(pValue float64) string {
 }
 
 func interpretMoonCorrelation(corr, pValue float64) string {
+	if math.IsNaN(corr) || math.IsInf(corr, 0) || math.IsNaN(pValue) || math.IsInf(pValue, 0) {
+		return "Insufficient data for moon phase correlation analysis"
+	}
 	if pValue > 0.1 {
 		return "No significant correlation between moon phase and number patterns"
 	}
@@ -697,6 +704,9 @@ func interpretMoonCorrelation(corr, pValue float64) string {
 }
 
 func interpretSolarCorrelation(corr, pValue float64) string {
+	if math.IsNaN(corr) || math.IsInf(corr, 0) || math.IsNaN(pValue) || math.IsInf(pValue, 0) {
+		return "Insufficient data for solar activity correlation analysis"
+	}
 	if pValue > 0.1 {
 		return "Solar activity shows no significant impact on number selection"
 	}
@@ -704,6 +714,9 @@ func interpretSolarCorrelation(corr, pValue float64) string {
 }
 
 func interpretWeatherCorrelation(corr, pValue float64) string {
+	if math.IsNaN(corr) || math.IsInf(corr, 0) || math.IsNaN(pValue) || math.IsInf(pValue, 0) {
+		return "Insufficient data for weather correlation analysis"
+	}
 	if pValue > 0.1 {
 		return "Weather conditions show no correlation with number patterns"
 	}
