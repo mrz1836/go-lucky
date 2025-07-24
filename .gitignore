@@ -65,3 +65,8 @@ coverage.txt
 profile.out
 EOF < /dev/null
 .env
+
+# Fuzz test data
+testdata/fuzz/
+**/*_fuzz_test.go.tmp*
+fuzz-*

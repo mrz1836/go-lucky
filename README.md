@@ -20,7 +20,7 @@
           <img src="https://img.shields.io/github/actions/workflow/status/mrz1836/go-lucky/fortress.yml?branch=master&logo=github&style=flat" alt="Build Status">
         </a><br/>
         <a href="https://goreportcard.com/report/github.com/mrz1836/go-lucky">
-          <img src="https://goreportcard.com/badge/github.com/mrz1836/go-lucky?style=flat" alt="Go Report Card">
+          <img src="https://goreportcard.com/badge/github.com/mrz1836/go-lucky?style=flat&v=1" alt="Go Report Card">
         </a><br/>
         <a href="https://github.com/mrz1836/go-lucky/commits/master">
           <img src="https://img.shields.io/github/last-commit/mrz1836/go-lucky?style=flat&logo=clockify&logoColor=white" alt="Last commit">
