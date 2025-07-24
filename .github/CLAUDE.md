@@ -91,7 +91,7 @@ make export-json
 ## Development Guidelines
 
 ### Code Style
-- Follow tech-conventions.md strictly
+- Follow tech conventions strictly (AGENTS.md)
 - Use context-first design
 - No global state
 - Comprehensive error handling

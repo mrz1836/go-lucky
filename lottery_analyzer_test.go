@@ -861,3 +861,35 @@ func BenchmarkPatternAnalysis(b *testing.B) {
 		}
 	}
 }
+
+func BenchmarkDataLoading(b *testing.B) {
+	ctx := context.Background()
+	for i := 0; i < b.N; i++ {
+		_, _ = NewAnalyzer(ctx, "lucky-numbers-history.csv", nil)
+	}
+}
+
+func BenchmarkCosmicCorrelations(b *testing.B) {
+	ctx := context.Background()
+	analyzer, _ := NewAnalyzer(ctx, "lucky-numbers-history.csv", nil)
+	correlationEngine := NewCorrelationEngine(analyzer)
+	_ = correlationEngine.EnrichWithCosmicData(ctx)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = correlationEngine.AnalyzeCorrelations(ctx)
+	}
+}
+
+func BenchmarkReportGeneration(b *testing.B) {
+	ctx := context.Background()
+	analyzer, _ := NewAnalyzer(ctx, "lucky-numbers-history.csv", nil)
+	correlationEngine := NewCorrelationEngine(analyzer)
+	_ = correlationEngine.EnrichWithCosmicData(ctx)
+	_ = correlationEngine.AnalyzeCorrelations(ctx)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		_ = correlationEngine.GenerateCosmicReport()
+	}
+}

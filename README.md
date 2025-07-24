@@ -422,18 +422,18 @@ go-lucky is optimized for speed and efficiency:
 - **Cache Friendly**: Optimized data structures for CPU cache efficiency
 
 ### 🧪 Benchmark Results
-Based on Apple M1 Max testing:
+Based on Apple M1 Max testing with 3,653+ drawings:
 
-| Operation           | Time (ms)  | Drawings/sec | Memory (MB) |
-|---------------------|------------|--------------|-------------|
-| Data Loading        | 45         | 44,444       | 12          |
-| Frequency Analysis  | 120        | 16,666       | 25          |
-| Pattern Detection   | 200        | 10,000       | 35          |
-| Cosmic Correlations | 1,800      | 1,111        | 45          |
-| Report Generation   | 350        | 5,714        | 50          |
-| **Total**           | **~2,500** | **800**      | **50**      |
+| Operation                    | Time (ms) | Operations/sec | Memory (MB) |
+|------------------------------|-----------|----------------|-------------|
+| Data Loading (CSV Parsing)   | 11.9      | 84            | 5.7         |
+| Recommendation Generation    | 0.59      | 1,684         | 0.03        |
+| Pattern Analysis             | 0.35      | 2,844         | 0.11        |
+| Cosmic Correlations          | 2,300     | 0.43          | 45          |
+| Report Generation            | 0.2       | 5,000         | 0.01        |
+| **Full Analysis Total**      | **~2,313** | **0.43**     | **51**      |
 
-*Performance varies by system specifications and dataset size.*
+*Performance measured on Apple M1 Max. Results vary by system and dataset size.*
 
 <br/>
 
@@ -491,7 +491,7 @@ make build
 ```
 
 **Development Guidelines:**
-- Follow conventions in `tech-conventions.md`
+- Follow conventions in `AGENTS.md`
 - Add tests for all new features
 - Maintain or improve code coverage
 - Update documentation for user-facing changes
@@ -569,6 +569,7 @@ func (ce *CorrelationEngine) analyzeNewFactor() {
 | `make test`         | Run all tests                 | Before committing     |
 | `make coverage`     | Generate test coverage report | Coverage verification |
 | `make lint`         | Run code linters              | Code quality check    |
+| `make benchmark`    | Run performance benchmarks    | Performance testing   |
 | `make clean`        | Clean up generated files      | Cleanup workspace     |
 | `make install-deps` | Install/update dependencies   | Initial setup         |
 

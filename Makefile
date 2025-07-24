@@ -71,6 +71,10 @@ clean: ## Clean up build artifacts and generated files
 	@rm -f test_*.csv debug_*.csv empty_*.csv invalid_*.csv
 	@echo "✅ Cleanup complete"
 
+## benchmark: Run performance benchmarks  
+benchmark: ## Run performance benchmarks
+	@$(MAKE) bench
+
 ##@ Quick Analysis Sets
 
 ## lucky-picks: Generate 5 different analysis-based number sets
