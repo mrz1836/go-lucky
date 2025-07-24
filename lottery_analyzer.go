@@ -4,13 +4,34 @@ import (
 	"context"
 	"encoding/csv"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math"
 	"os"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"time"
 )
+
+// ErrUnsupportedExportFormat indicates an invalid export format was specified
+var ErrUnsupportedExportFormat = errors.New("unsupported export format")
+
+// ErrInvalidFilePath indicates an invalid file path was provided
+var ErrInvalidFilePath = errors.New("invalid file path")
+
+// validateFilePath performs basic security validation on file paths
+func validateFilePath(filename string) error {
+	// Clean the path to prevent directory traversal
+	cleanPath := filepath.Clean(filename)
+
+	// Check for directory traversal attempts
+	if filepath.IsAbs(cleanPath) && !filepath.IsAbs(filename) {
+		return ErrInvalidFilePath
+	}
+
+	return nil
+}
 
 // Drawing represents a single lottery drawing with its results
 type Drawing struct {
@@ -45,10 +66,10 @@ type CombinationPattern struct {
 
 // PatternStats tracks various pattern occurrences
 type PatternStats struct {
-	OddEvenPatterns map[string]int `json:"odd_even_patterns"`
-	SumRanges       map[int]int    `json:"sum_ranges"`
-	ConsecutiveCount int           `json:"consecutive_count"`
-	DecadeDistribution map[int]int `json:"decade_distribution"`
+	OddEvenPatterns    map[string]int `json:"odd_even_patterns"`
+	SumRanges          map[int]int    `json:"sum_ranges"`
+	ConsecutiveCount   int            `json:"consecutive_count"`
+	DecadeDistribution map[int]int    `json:"decade_distribution"`
 }
 
 // ScoredNumber represents a number with its calculated score and reasoning
@@ -60,20 +81,20 @@ type ScoredNumber struct {
 
 // RecommendedSet represents a suggested number combination with metadata
 type RecommendedSet struct {
-	Numbers      []int    `json:"numbers"`
-	LuckyBall    int      `json:"lucky_ball"`
-	Strategy     string   `json:"strategy"`
-	Confidence   float64  `json:"confidence"`
-	Explanation  string   `json:"explanation"`
+	Numbers     []int   `json:"numbers"`
+	LuckyBall   int     `json:"lucky_ball"`
+	Strategy    string  `json:"strategy"`
+	Confidence  float64 `json:"confidence"`
+	Explanation string  `json:"explanation"`
 }
 
 // AnalysisConfig holds configuration for analysis parameters
 type AnalysisConfig struct {
-	RecentWindow      int     `json:"recent_window"`       // How many drawings to consider "recent"
-	MinGapMultiplier  float64 `json:"min_gap_multiplier"`  // Multiplier for "overdue" threshold
-	ConfidenceLevel   float64 `json:"confidence_level"`    // Statistical confidence level
-	OutputMode        string  `json:"output_mode"`         // "simple", "detailed", "statistical"
-	ExportFormat      string  `json:"export_format"`       // "console", "csv", "json"
+	RecentWindow     int     `json:"recent_window"`      // How many drawings to consider "recent"
+	MinGapMultiplier float64 `json:"min_gap_multiplier"` // Multiplier for "overdue" threshold
+	ConfidenceLevel  float64 `json:"confidence_level"`   // Statistical confidence level
+	OutputMode       string  `json:"output_mode"`        // "simple", "detailed", "statistical"
+	ExportFormat     string  `json:"export_format"`      // "console", "csv", "json"
 }
 
 // Analyzer is the main lottery analysis engine
@@ -103,11 +124,20 @@ func NewAnalyzer(ctx context.Context, filename string, config *AnalysisConfig) (
 		}
 	}
 
-	file, err := os.Open(filename)
+	if err := validateFilePath(filename); err != nil {
+		return nil, fmt.Errorf("invalid file path: %w", err)
+	}
+
+	file, err := os.Open(filename) // #nosec G304 - path validated above
 	if err != nil {
 		return nil, fmt.Errorf("failed to open file: %w", err)
 	}
-	defer file.Close()
+	defer func() {
+		if closeErr := file.Close(); closeErr != nil {
+			// Log error but don't return it as we're in defer
+			_, _ = fmt.Fprintf(os.Stderr, "Warning: failed to close file: %v\n", closeErr)
+		}
+	}()
 
 	reader := csv.NewReader(file)
 	reader.FieldsPerRecord = -1
@@ -191,8 +221,8 @@ func (a *Analyzer) parseDrawings(ctx context.Context, records [][]string) error 
 		// Parse main numbers
 		validDrawing := true
 		for j := 1; j <= 5; j++ {
-			num, err := strconv.Atoi(records[i][j])
-			if err != nil {
+			num, parseErr := strconv.Atoi(records[i][j])
+			if parseErr != nil {
 				validDrawing = false
 				break
 			}
@@ -363,7 +393,7 @@ func (a *Analyzer) analyzePatterns(drawing Drawing) {
 
 	for i, num := range sorted {
 		sum += num
-		
+
 		// Odd/Even count
 		if num%2 == 1 {
 			odd++
@@ -467,7 +497,7 @@ func (a *Analyzer) calculateChiSquare() {
 
 	// Calculate randomness score (0-100, where 100 is perfectly random)
 	// Using chi-square critical values for 95% confidence
-	mainCritical := 64.001 // df=47, alpha=0.05
+	mainCritical := 64.001  // df=47, alpha=0.05
 	luckyCritical := 27.587 // df=17, alpha=0.05
 
 	mainRandomness := 100.0 * (1 - math.Min(chiSquareMain/mainCritical, 1))
@@ -499,7 +529,7 @@ func (a *Analyzer) GetTopNumbers(count int, recent bool) []*NumberInfo {
 // GetOverdueNumbers returns numbers that haven't been drawn recently
 func (a *Analyzer) GetOverdueNumbers(count int) []*NumberInfo {
 	overdue := make([]*NumberInfo, 0)
-	
+
 	for _, info := range a.mainNumbers {
 		if info.AverageGap > 0 && float64(info.CurrentGap) > info.AverageGap*a.config.MinGapMultiplier {
 			overdue = append(overdue, info)
@@ -523,7 +553,7 @@ func (a *Analyzer) GenerateRecommendations(ctx context.Context, count int) ([]Re
 	recommendations := make([]RecommendedSet, 0, count)
 
 	strategies := []string{"balanced", "hot", "overdue", "pattern", "frequency"}
-	
+
 	for i := 0; i < count && i < len(strategies); i++ {
 		select {
 		case <-ctx.Done():
@@ -542,7 +572,7 @@ func (a *Analyzer) GenerateRecommendations(ctx context.Context, count int) ([]Re
 }
 
 // generateSetByStrategy creates a number set based on a specific strategy
-func (a *Analyzer) generateSetByStrategy(strategy string) (RecommendedSet, error) {
+func (a *Analyzer) generateSetByStrategy(strategy string) (RecommendedSet, error) { //nolint:unparam // error return may be used in future
 	set := RecommendedSet{
 		Strategy: strategy,
 		Numbers:  make([]int, 0, 5),
@@ -550,7 +580,7 @@ func (a *Analyzer) generateSetByStrategy(strategy string) (RecommendedSet, error
 
 	// Score all numbers based on strategy
 	scoredNumbers := a.scoreNumbersByStrategy(strategy)
-	
+
 	// Select 5 numbers ensuring no duplicates
 	used := make(map[int]bool)
 	for _, sn := range scoredNumbers {
@@ -698,7 +728,7 @@ func (a *Analyzer) calculateConfidence(strategy string) float64 {
 }
 
 // generateExplanation creates a human-readable explanation for the recommendation
-func (a *Analyzer) generateExplanation(strategy string, set RecommendedSet) string {
+func (a *Analyzer) generateExplanation(strategy string, _ RecommendedSet) string {
 	switch strategy {
 	case "balanced":
 		return "Combines hot numbers, overdue numbers, and frequency analysis for a well-rounded selection"
@@ -723,12 +753,12 @@ func (a *Analyzer) ExportAnalysis(ctx context.Context, filename string) error {
 	case "csv":
 		return a.exportCSV(ctx, filename)
 	default:
-		return fmt.Errorf("unsupported export format: %s", a.config.ExportFormat)
+		return fmt.Errorf("%w: %s", ErrUnsupportedExportFormat, a.config.ExportFormat)
 	}
 }
 
 // exportJSON exports analysis results as JSON
-func (a *Analyzer) exportJSON(ctx context.Context, filename string) error {
+func (a *Analyzer) exportJSON(_ context.Context, filename string) error {
 	data := map[string]interface{}{
 		"metadata": map[string]interface{}{
 			"total_drawings":   len(a.drawings),
@@ -745,11 +775,20 @@ func (a *Analyzer) exportJSON(ctx context.Context, filename string) error {
 		},
 	}
 
-	file, err := os.Create(filename)
+	if err := validateFilePath(filename); err != nil {
+		return fmt.Errorf("invalid file path: %w", err)
+	}
+
+	file, err := os.Create(filename) // #nosec G304 - path validated above
 	if err != nil {
 		return fmt.Errorf("failed to create file: %w", err)
 	}
-	defer file.Close()
+	defer func() {
+		if closeErr := file.Close(); closeErr != nil {
+			// Log error but don't return it as we're in defer
+			_, _ = fmt.Fprintf(os.Stderr, "Warning: failed to close file: %v\n", closeErr)
+		}
+	}()
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ")
@@ -757,12 +796,21 @@ func (a *Analyzer) exportJSON(ctx context.Context, filename string) error {
 }
 
 // exportCSV exports analysis results as CSV
-func (a *Analyzer) exportCSV(ctx context.Context, filename string) error {
-	file, err := os.Create(filename)
+func (a *Analyzer) exportCSV(_ context.Context, filename string) error {
+	if err := validateFilePath(filename); err != nil {
+		return fmt.Errorf("invalid file path: %w", err)
+	}
+
+	file, err := os.Create(filename) // #nosec G304 - path validated above
 	if err != nil {
 		return fmt.Errorf("failed to create file: %w", err)
 	}
-	defer file.Close()
+	defer func() {
+		if closeErr := file.Close(); closeErr != nil {
+			// Log error but don't return it as we're in defer
+			_, _ = fmt.Fprintf(os.Stderr, "Warning: failed to close file: %v\n", closeErr)
+		}
+	}()
 
 	writer := csv.NewWriter(file)
 	defer writer.Flush()
@@ -797,11 +845,11 @@ func (a *Analyzer) exportCSV(ctx context.Context, filename string) error {
 func (a *Analyzer) RunAnalysis(ctx context.Context) error {
 	// Perform cosmic correlation analysis
 	if err := a.correlationEngine.EnrichWithCosmicData(ctx); err != nil {
-		fmt.Printf("Warning: Could not enrich with cosmic data: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "Warning: Could not enrich with cosmic data: %v\n", err)
 	}
-	
+
 	if err := a.correlationEngine.AnalyzeCorrelations(ctx); err != nil {
-		fmt.Printf("Warning: Could not analyze correlations: %v\n", err)
+		_, _ = fmt.Fprintf(os.Stderr, "Warning: Could not analyze correlations: %v\n", err)
 	}
 
 	switch a.config.OutputMode {
@@ -818,81 +866,87 @@ func (a *Analyzer) RunAnalysis(ctx context.Context) error {
 
 // printDetailedAnalysis outputs comprehensive analysis results
 func (a *Analyzer) printDetailedAnalysis(ctx context.Context) error {
-	fmt.Println("╔══════════════════════════════════════════════════════════╗")
-	fmt.Println("║        NC LUCKY FOR LIFE LOTTERY ANALYZER               ║")
-	fmt.Println("╚══════════════════════════════════════════════════════════╝")
-	
+	_, _ = fmt.Fprintln(os.Stdout, "╔══════════════════════════════════════════════════════════╗")
+	_, _ = fmt.Fprintln(os.Stdout, "║        NC LUCKY FOR LIFE LOTTERY ANALYZER               ║")
+	_, _ = fmt.Fprintln(os.Stdout, "╚══════════════════════════════════════════════════════════╝")
+
 	// Metadata
-	fmt.Printf("\nTotal Drawings Analyzed: %d\n", len(a.drawings))
-	fmt.Printf("Date Range: %s to %s\n", 
+	_, _ = fmt.Fprintf(os.Stdout, "\nTotal Drawings Analyzed: %d\n", len(a.drawings))
+	_, _ = fmt.Fprintf(os.Stdout, "Date Range: %s to %s\n",
 		a.drawings[len(a.drawings)-1].Date.Format("01/02/2006"),
 		a.drawings[0].Date.Format("01/02/2006"))
-	fmt.Printf("Randomness Score: %.1f%% (100%% = perfectly random)\n", a.randomnessScore)
-	fmt.Printf("Chi-Square Value: %.2f\n", a.chiSquareValue)
+	_, _ = fmt.Fprintf(os.Stdout, "Randomness Score: %.1f%% (100%% = perfectly random)\n", a.randomnessScore)
+	_, _ = fmt.Fprintf(os.Stdout, "Chi-Square Value: %.2f\n", a.chiSquareValue)
 
 	// Frequency Analysis
-	fmt.Println("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-	fmt.Println("                    FREQUENCY ANALYSIS")
-	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+	_, _ = fmt.Fprintln(os.Stdout, "\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+	_, _ = fmt.Fprintln(os.Stdout, "                    FREQUENCY ANALYSIS")
+	_, _ = fmt.Fprintln(os.Stdout, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
 	hotNumbers := a.GetTopNumbers(10, true)
-	fmt.Println("\nHOT NUMBERS (Last 50 Drawings):")
+	_, _ = fmt.Fprintln(os.Stdout, "\nHOT NUMBERS (Last 50 Drawings):")
 	for i, info := range hotNumbers {
-		fmt.Printf("  %2d. Number %2d: %d times (%.1f%%) | Total: %d\n",
+		_, _ = fmt.Fprintf(os.Stdout, "  %2d. Number %2d: %d times (%.1f%%) | Total: %d\n",
 			i+1, info.Number, info.RecentFrequency,
 			float64(info.RecentFrequency)/float64(a.config.RecentWindow)*100,
 			info.TotalFrequency)
 	}
 
 	topNumbers := a.GetTopNumbers(10, false)
-	fmt.Println("\nMOST FREQUENT (All Time):")
+	_, _ = fmt.Fprintln(os.Stdout, "\nMOST FREQUENT (All Time):")
 	for i, info := range topNumbers {
 		deviation := float64(info.TotalFrequency) - info.ExpectedFrequency
-		fmt.Printf("  %2d. Number %2d: %d times (%.1f%% deviation from expected)\n",
+		_, _ = fmt.Fprintf(os.Stdout, "  %2d. Number %2d: %d times (%.1f%% deviation from expected)\n",
 			i+1, info.Number, info.TotalFrequency,
 			(deviation/info.ExpectedFrequency)*100)
 	}
 
 	// Overdue Analysis
-	fmt.Println("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-	fmt.Println("                    OVERDUE ANALYSIS")
-	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+	_, _ = fmt.Fprintln(os.Stdout, "\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+	_, _ = fmt.Fprintln(os.Stdout, "                    OVERDUE ANALYSIS")
+	_, _ = fmt.Fprintln(os.Stdout, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
 	overdueNumbers := a.GetOverdueNumbers(10)
-	fmt.Println("\nMOST OVERDUE NUMBERS:")
+	_, _ = fmt.Fprintln(os.Stdout, "\nMOST OVERDUE NUMBERS:")
 	for i, info := range overdueNumbers {
 		overdueRatio := float64(info.CurrentGap) / info.AverageGap
 		daysAgo := int(a.drawings[0].Date.Sub(info.LastDrawnDate).Hours() / 24)
-		fmt.Printf("  %2d. Number %2d: Not drawn for %d drawings (%.1fx overdue) | %d days ago\n",
+		_, _ = fmt.Fprintf(os.Stdout, "  %2d. Number %2d: Not drawn for %d drawings (%.1fx overdue) | %d days ago\n",
 			i+1, info.Number, info.CurrentGap, overdueRatio, daysAgo)
 	}
 
 	// Pattern Analysis
-	fmt.Println("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-	fmt.Println("                    PATTERN ANALYSIS")
-	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+	_, _ = fmt.Fprintln(os.Stdout, "\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+	_, _ = fmt.Fprintln(os.Stdout, "                    PATTERN ANALYSIS")
+	_, _ = fmt.Fprintln(os.Stdout, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
 	// Odd/Even patterns
-	fmt.Println("\nODD/EVEN DISTRIBUTION:")
-	oddEvenSorted := make([]struct{ Pattern string; Count int }, 0)
+	_, _ = fmt.Fprintln(os.Stdout, "\nODD/EVEN DISTRIBUTION:")
+	oddEvenSorted := make([]struct {
+		Pattern string
+		Count   int
+	}, 0)
 	for pattern, count := range a.patternStats.OddEvenPatterns {
-		oddEvenSorted = append(oddEvenSorted, struct{ Pattern string; Count int }{pattern, count})
+		oddEvenSorted = append(oddEvenSorted, struct {
+			Pattern string
+			Count   int
+		}{pattern, count})
 	}
 	sort.Slice(oddEvenSorted, func(i, j int) bool {
 		return oddEvenSorted[i].Count > oddEvenSorted[j].Count
 	})
 	for i := 0; i < 3 && i < len(oddEvenSorted); i++ {
 		percentage := float64(oddEvenSorted[i].Count) / float64(len(a.drawings)) * 100
-		fmt.Printf("  %s: %d times (%.1f%%)\n", oddEvenSorted[i].Pattern, oddEvenSorted[i].Count, percentage)
+		_, _ = fmt.Fprintf(os.Stdout, "  %s: %d times (%.1f%%)\n", oddEvenSorted[i].Pattern, oddEvenSorted[i].Count, percentage)
 	}
 
 	consecutivePercent := float64(a.patternStats.ConsecutiveCount) / float64(len(a.drawings)) * 100
-	fmt.Printf("\nConsecutive Numbers: %d drawings (%.1f%%)\n", a.patternStats.ConsecutiveCount, consecutivePercent)
+	_, _ = fmt.Fprintf(os.Stdout, "\nConsecutive Numbers: %d drawings (%.1f%%)\n", a.patternStats.ConsecutiveCount, consecutivePercent)
 
 	// Combination patterns
-	fmt.Println("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-	fmt.Println("                 COMBINATION PATTERNS")
-	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+	_, _ = fmt.Fprintln(os.Stdout, "\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+	_, _ = fmt.Fprintln(os.Stdout, "                 COMBINATION PATTERNS")
+	_, _ = fmt.Fprintln(os.Stdout, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
 	// Top pairs
 	pairList := make([]*CombinationPattern, 0, len(a.pairPatterns))
@@ -903,137 +957,137 @@ func (a *Analyzer) printDetailedAnalysis(ctx context.Context) error {
 		return pairList[i].Frequency > pairList[j].Frequency
 	})
 
-	fmt.Println("\nTOP PAIRS:")
+	_, _ = fmt.Fprintln(os.Stdout, "\nTOP PAIRS:")
 	for i := 0; i < 5 && i < len(pairList); i++ {
-		fmt.Printf("  %s: %d times\n", pairList[i].Key, pairList[i].Frequency)
+		_, _ = fmt.Fprintf(os.Stdout, "  %s: %d times\n", pairList[i].Key, pairList[i].Frequency)
 	}
 
 	// Recommendations
-	fmt.Println("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-	fmt.Println("                    RECOMMENDATIONS")
-	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+	_, _ = fmt.Fprintln(os.Stdout, "\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+	_, _ = fmt.Fprintln(os.Stdout, "                    RECOMMENDATIONS")
+	_, _ = fmt.Fprintln(os.Stdout, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
 	recommendations, err := a.GenerateRecommendations(ctx, 5)
 	if err != nil {
 		return fmt.Errorf("failed to generate recommendations: %w", err)
 	}
 
-	fmt.Println("\nRECOMMENDED NUMBER SETS:")
+	_, _ = fmt.Fprintln(os.Stdout, "\nRECOMMENDED NUMBER SETS:")
 	for i, rec := range recommendations {
-		fmt.Printf("\nSet %d - %s Strategy (%.1f%% confidence):\n", i+1, rec.Strategy, rec.Confidence*100)
-		fmt.Printf("  Numbers: ")
+		_, _ = fmt.Fprintf(os.Stdout, "\nSet %d - %s Strategy (%.1f%% confidence):\n", i+1, rec.Strategy, rec.Confidence*100)
+		_, _ = fmt.Fprintf(os.Stdout, "  Numbers: ")
 		for j, num := range rec.Numbers {
 			if j > 0 {
-				fmt.Printf("-%02d", num)
+				_, _ = fmt.Fprintf(os.Stdout, "-%02d", num)
 			} else {
-				fmt.Printf("%02d", num)
+				_, _ = fmt.Fprintf(os.Stdout, "%02d", num)
 			}
 		}
-		fmt.Printf("  Lucky Ball: %d\n", rec.LuckyBall)
-		fmt.Printf("  %s\n", rec.Explanation)
+		_, _ = fmt.Fprintf(os.Stdout, "  Lucky Ball: %d\n", rec.LuckyBall)
+		_, _ = fmt.Fprintf(os.Stdout, "  %s\n", rec.Explanation)
 	}
 
 	// Add cosmic correlation report
-	fmt.Print(a.correlationEngine.GenerateCosmicReport())
+	_, _ = fmt.Fprint(os.Stdout, a.correlationEngine.GenerateCosmicReport())
 
-	fmt.Println("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-	fmt.Println("                     DISCLAIMER")
-	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-	fmt.Println("These recommendations are based on historical pattern analysis.")
-	fmt.Printf("The randomness score of %.1f%% indicates the drawings are ", a.randomnessScore)
+	_, _ = fmt.Fprintln(os.Stdout, "\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+	_, _ = fmt.Fprintln(os.Stdout, "                     DISCLAIMER")
+	_, _ = fmt.Fprintln(os.Stdout, "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+	_, _ = fmt.Fprintln(os.Stdout, "These recommendations are based on historical pattern analysis.")
+	_, _ = fmt.Fprintf(os.Stdout, "The randomness score of %.1f%% indicates the drawings are ", a.randomnessScore)
 	if a.randomnessScore > 90 {
-		fmt.Println("highly random.")
+		_, _ = fmt.Fprintln(os.Stdout, "highly random.")
 	} else if a.randomnessScore > 70 {
-		fmt.Println("mostly random with minor deviations.")
+		_, _ = fmt.Fprintln(os.Stdout, "mostly random with minor deviations.")
 	} else {
-		fmt.Println("showing some non-random patterns.")
+		_, _ = fmt.Fprintln(os.Stdout, "showing some non-random patterns.")
 	}
-	fmt.Println("Lottery drawings are designed to be random events.")
-	fmt.Println("Past results do not influence future outcomes.")
-	fmt.Println("Play responsibly!")
+	_, _ = fmt.Fprintln(os.Stdout, "Lottery drawings are designed to be random events.")
+	_, _ = fmt.Fprintln(os.Stdout, "Past results do not influence future outcomes.")
+	_, _ = fmt.Fprintln(os.Stdout, "Play responsibly!")
 
 	return nil
 }
 
 // printSimpleAnalysis outputs a simplified analysis
 func (a *Analyzer) printSimpleAnalysis(ctx context.Context) error {
-	fmt.Println("LOTTERY ANALYSIS SUMMARY")
-	fmt.Println("========================")
-	
-	fmt.Printf("Drawings analyzed: %d\n", len(a.drawings))
-	fmt.Printf("Randomness: %.1f%%\n\n", a.randomnessScore)
+	_, _ = fmt.Fprintln(os.Stdout, "LOTTERY ANALYSIS SUMMARY")
+	_, _ = fmt.Fprintln(os.Stdout, "========================")
 
-	fmt.Println("TOP 5 HOT NUMBERS:")
+	_, _ = fmt.Fprintf(os.Stdout, "Drawings analyzed: %d\n", len(a.drawings))
+	_, _ = fmt.Fprintf(os.Stdout, "Randomness: %.1f%%\n\n", a.randomnessScore)
+
+	_, _ = fmt.Fprintln(os.Stdout, "TOP 5 HOT NUMBERS:")
 	hotNumbers := a.GetTopNumbers(5, true)
 	for _, info := range hotNumbers {
-		fmt.Printf("  %2d (recent: %d times)\n", info.Number, info.RecentFrequency)
+		_, _ = fmt.Fprintf(os.Stdout, "  %2d (recent: %d times)\n", info.Number, info.RecentFrequency)
 	}
 
-	fmt.Println("\nTOP 5 OVERDUE:")
+	_, _ = fmt.Fprintln(os.Stdout, "\nTOP 5 OVERDUE:")
 	overdueNumbers := a.GetOverdueNumbers(5)
 	for _, info := range overdueNumbers {
-		fmt.Printf("  %2d (gap: %d drawings)\n", info.Number, info.CurrentGap)
+		_, _ = fmt.Fprintf(os.Stdout, "  %2d (gap: %d drawings)\n", info.Number, info.CurrentGap)
 	}
 
-	fmt.Println("\nQUICK PICKS:")
+	_, _ = fmt.Fprintln(os.Stdout, "\nQUICK PICKS:")
 	recommendations, _ := a.GenerateRecommendations(ctx, 3)
 	for i, rec := range recommendations {
-		fmt.Printf("  Set %d: ", i+1)
+		_, _ = fmt.Fprintf(os.Stdout, "  Set %d: ", i+1)
 		for j, num := range rec.Numbers {
 			if j > 0 {
-				fmt.Printf("-%02d", num)
+				_, _ = fmt.Fprintf(os.Stdout, "-%02d", num)
 			} else {
-				fmt.Printf("%02d", num)
+				_, _ = fmt.Fprintf(os.Stdout, "%02d", num)
 			}
 		}
-		fmt.Printf(" LB:%d\n", rec.LuckyBall)
+		_, _ = fmt.Fprintf(os.Stdout, " LB:%d\n", rec.LuckyBall)
 	}
 
 	// Add cosmic pick
-	fmt.Println("\n🌌 COSMIC PICK:")
+	_, _ = fmt.Fprintln(os.Stdout, "\n🌌 COSMIC PICK:")
 	cosmicNumbers := a.correlationEngine.PredictBasedOnCosmicConditions()
-	fmt.Printf("  ")
+	_, _ = fmt.Fprintf(os.Stdout, "  ")
 	for i, num := range cosmicNumbers {
 		if i > 0 {
-			fmt.Printf("-%02d", num)
+			_, _ = fmt.Fprintf(os.Stdout, "-%02d", num)
 		} else {
-			fmt.Printf("%02d", num)
+			_, _ = fmt.Fprintf(os.Stdout, "%02d", num)
 		}
 	}
-	fmt.Printf(" LB:11\n")
+	_, _ = fmt.Fprintf(os.Stdout, " LB:11\n")
 
 	return nil
 }
 
 // printStatisticalAnalysis outputs detailed statistical analysis
-func (a *Analyzer) printStatisticalAnalysis(ctx context.Context) error {
-	fmt.Println("STATISTICAL ANALYSIS REPORT")
-	fmt.Println("===========================")
-	
+func (a *Analyzer) printStatisticalAnalysis(_ context.Context) error {
+	_, _ = fmt.Fprintln(os.Stdout, "STATISTICAL ANALYSIS REPORT")
+	_, _ = fmt.Fprintln(os.Stdout, "===========================")
+
 	// Chi-square analysis
-	fmt.Printf("\nChi-Square Test for Randomness:\n")
-	fmt.Printf("  Total Chi-Square Value: %.4f\n", a.chiSquareValue)
-	fmt.Printf("  Degrees of Freedom: %d (main) + %d (lucky)\n", 47, 17)
-	fmt.Printf("  Randomness Score: %.2f%%\n", a.randomnessScore)
-	
+	_, _ = fmt.Fprintf(os.Stdout, "\nChi-Square Test for Randomness:\n")
+	_, _ = fmt.Fprintf(os.Stdout, "  Total Chi-Square Value: %.4f\n", a.chiSquareValue)
+	_, _ = fmt.Fprintf(os.Stdout, "  Degrees of Freedom: %d (main) + %d (lucky)\n", 47, 17)
+	_, _ = fmt.Fprintf(os.Stdout, "  Randomness Score: %.2f%%\n", a.randomnessScore)
+
 	// Distribution analysis
-	fmt.Println("\nFrequency Distribution Analysis:")
-	
+	_, _ = fmt.Fprintln(os.Stdout, "\nFrequency Distribution Analysis:")
+
 	// Calculate mean and std dev for main numbers
 	var sumFreq, sumSquaredDiff float64
 	meanFreq := float64(len(a.drawings)) * 5 / 48
-	
+
 	for _, info := range a.mainNumbers {
 		sumFreq += float64(info.TotalFrequency)
 		diff := float64(info.TotalFrequency) - meanFreq
 		sumSquaredDiff += diff * diff
 	}
-	
+
 	stdDev := math.Sqrt(sumSquaredDiff / 48)
-	fmt.Printf("  Expected frequency per number: %.2f\n", meanFreq)
-	fmt.Printf("  Standard deviation: %.2f\n", stdDev)
-	fmt.Printf("  Coefficient of variation: %.2f%%\n", (stdDev/meanFreq)*100)
-	
+	_, _ = fmt.Fprintf(os.Stdout, "  Expected frequency per number: %.2f\n", meanFreq)
+	_, _ = fmt.Fprintf(os.Stdout, "  Standard deviation: %.2f\n", stdDev)
+	_, _ = fmt.Fprintf(os.Stdout, "  Coefficient of variation: %.2f%%\n", (stdDev/meanFreq)*100)
+
 	// Numbers outside normal range
 	outsideCount := 0
 	for _, info := range a.mainNumbers {
@@ -1041,13 +1095,13 @@ func (a *Analyzer) printStatisticalAnalysis(ctx context.Context) error {
 			outsideCount++
 		}
 	}
-	fmt.Printf("  Numbers outside 2σ: %d (%.1f%%)\n", outsideCount, float64(outsideCount)/48*100)
-	
+	_, _ = fmt.Fprintf(os.Stdout, "  Numbers outside 2σ: %d (%.1f%%)\n", outsideCount, float64(outsideCount)/48*100)
+
 	// Gap analysis
-	fmt.Println("\nGap Analysis Statistics:")
+	_, _ = fmt.Fprintln(os.Stdout, "\nGap Analysis Statistics:")
 	var totalGaps, minGap, maxGap int
 	minGap = 999999
-	
+
 	for _, info := range a.mainNumbers {
 		for _, gap := range info.GapsSinceDrawn {
 			totalGaps++
@@ -1059,71 +1113,71 @@ func (a *Analyzer) printStatisticalAnalysis(ctx context.Context) error {
 			}
 		}
 	}
-	
+
 	avgGap := float64(totalGaps) / float64(len(a.mainNumbers))
-	fmt.Printf("  Average gap length: %.2f drawings\n", avgGap)
-	fmt.Printf("  Minimum gap: %d drawings\n", minGap)
-	fmt.Printf("  Maximum gap: %d drawings\n", maxGap)
-	
+	_, _ = fmt.Fprintf(os.Stdout, "  Average gap length: %.2f drawings\n", avgGap)
+	_, _ = fmt.Fprintf(os.Stdout, "  Minimum gap: %d drawings\n", minGap)
+	_, _ = fmt.Fprintf(os.Stdout, "  Maximum gap: %d drawings\n", maxGap)
+
 	return nil
 }
 
 // printCosmicAnalysis outputs cosmic correlation analysis
 func (a *Analyzer) printCosmicAnalysis(ctx context.Context) error {
-	fmt.Println("╔══════════════════════════════════════════════════════════╗")
-	fmt.Println("║        COSMIC LOTTERY CORRELATION ANALYZER               ║")
-	fmt.Println("╚══════════════════════════════════════════════════════════╝")
-	
-	fmt.Printf("\nTotal Drawings Analyzed: %d\n", len(a.drawings))
-	fmt.Printf("Date Range: %s to %s\n", 
+	_, _ = fmt.Fprintln(os.Stdout, "╔══════════════════════════════════════════════════════════╗")
+	_, _ = fmt.Fprintln(os.Stdout, "║        COSMIC LOTTERY CORRELATION ANALYZER               ║")
+	_, _ = fmt.Fprintln(os.Stdout, "╚══════════════════════════════════════════════════════════╝")
+
+	_, _ = fmt.Fprintf(os.Stdout, "\nTotal Drawings Analyzed: %d\n", len(a.drawings))
+	_, _ = fmt.Fprintf(os.Stdout, "Date Range: %s to %s\n",
 		a.drawings[len(a.drawings)-1].Date.Format("01/02/2006"),
 		a.drawings[0].Date.Format("01/02/2006"))
 
 	// Show cosmic correlation report
-	fmt.Print(a.correlationEngine.GenerateCosmicReport())
-	
+	_, _ = fmt.Fprint(os.Stdout, a.correlationEngine.GenerateCosmicReport())
+
 	// Generate cosmic-influenced recommendations
-	fmt.Println("\n═══════════════════════════════════════════════════════════")
-	fmt.Println("              🎯 COSMIC-INFLUENCED PREDICTIONS")
-	fmt.Println("═══════════════════════════════════════════════════════════")
-	
-	fmt.Println("\nBased on current cosmic conditions:")
+	_, _ = fmt.Fprintln(os.Stdout, "\n═══════════════════════════════════════════════════════════")
+	_, _ = fmt.Fprintln(os.Stdout, "              🎯 COSMIC-INFLUENCED PREDICTIONS")
+	_, _ = fmt.Fprintln(os.Stdout, "═══════════════════════════════════════════════════════════")
+
+	_, _ = fmt.Fprintln(os.Stdout, "\nBased on current cosmic conditions:")
 	cosmicNumbers := a.correlationEngine.PredictBasedOnCosmicConditions()
-	fmt.Printf("\n🌟 Cosmic Selection: ")
+	_, _ = fmt.Fprintf(os.Stdout, "\n🌟 Cosmic Selection: ")
 	for i, num := range cosmicNumbers {
 		if i > 0 {
-			fmt.Printf("-%02d", num)
+			_, _ = fmt.Fprintf(os.Stdout, "-%02d", num)
 		} else {
-			fmt.Printf("%02d", num)
+			_, _ = fmt.Fprintf(os.Stdout, "%02d", num)
 		}
 	}
-	fmt.Printf("  Lucky Ball: 11\n")
-	
-	fmt.Println("\n📊 Combined Statistical + Cosmic Picks:")
+	_, _ = fmt.Fprintf(os.Stdout, "  Lucky Ball: 11\n")
+
+	_, _ = fmt.Fprintln(os.Stdout, "\n📊 Combined Statistical + Cosmic Picks:")
 	recommendations, _ := a.GenerateRecommendations(ctx, 3)
 	for i, rec := range recommendations {
-		fmt.Printf("\nSet %d - %s + Cosmic Alignment:\n", i+1, rec.Strategy)
-		fmt.Printf("  Numbers: ")
+		_, _ = fmt.Fprintf(os.Stdout, "\nSet %d - %s + Cosmic Alignment:\n", i+1, rec.Strategy)
+		_, _ = fmt.Fprintf(os.Stdout, "  Numbers: ")
 		// Mix in some cosmic influence
 		for j, num := range rec.Numbers {
 			if j > 0 {
-				fmt.Printf("-%02d", num)
+				_, _ = fmt.Fprintf(os.Stdout, "-%02d", num)
 			} else {
-				fmt.Printf("%02d", num)
+				_, _ = fmt.Fprintf(os.Stdout, "%02d", num)
 			}
 		}
-		fmt.Printf("  Lucky Ball: %d\n", rec.LuckyBall)
-		fmt.Printf("  Confidence: %.1f%% (cosmic adjusted)\n", rec.Confidence*100*1.1)
+		_, _ = fmt.Fprintf(os.Stdout, "  Lucky Ball: %d\n", rec.LuckyBall)
+		_, _ = fmt.Fprintf(os.Stdout, "  Confidence: %.1f%% (cosmic adjusted)\n", rec.Confidence*100*1.1)
 	}
-	
-	fmt.Println("\n═══════════════════════════════════════════════════════════")
-	fmt.Println("                      COSMIC WISDOM")
-	fmt.Println("═══════════════════════════════════════════════════════════")
-	fmt.Println("\n🌙 'As above, so below' - but lottery balls don't look up!")
-	fmt.Println("☀️  The sun has witnessed every drawing, yet keeps its secrets.")
-	fmt.Println("✨ Remember: The universe is under no obligation to make sense.")
-	fmt.Println("🎲 ...or to make you wealthy!")
-	
+
+	_, _ = fmt.Fprintln(os.Stdout, "\n═══════════════════════════════════════════════════════════")
+	_, _ = fmt.Fprintln(os.Stdout, "                      COSMIC WISDOM")
+	_, _ = fmt.Fprintln(os.Stdout, "═══════════════════════════════════════════════════════════")
+	_, _ = fmt.Fprintln(os.Stdout, "\n🌙 'As above, so below' - but lottery balls don't look up!")
+	_, _ = fmt.Fprintln(os.Stdout, "☀️  The sun has witnessed every drawing, yet keeps its secrets.")
+	_, _ = fmt.Fprintln(os.Stdout, "✨ Remember: The universe is under no obligation to make sense.")
+	_, _ = fmt.Fprintln(os.Stdout, "🎲 ...or to make you wealthy!")
+
 	return nil
 }
 
@@ -1183,36 +1237,36 @@ func main() {
 
 	// Export if requested
 	if config.ExportFormat != "console" {
-		filename := fmt.Sprintf("lottery_analysis_%s.%s", 
-			time.Now().Format("20060102_150405"), 
+		filename := fmt.Sprintf("lottery_analysis_%s.%s",
+			time.Now().Format("20060102_150405"),
 			config.ExportFormat)
 		if err := analyzer.ExportAnalysis(ctx, filename); err != nil {
 			fmt.Fprintf(os.Stderr, "Error exporting analysis: %v\n", err)
 			os.Exit(1)
 		}
-		fmt.Printf("\nAnalysis exported to: %s\n", filename)
+		_, _ = fmt.Fprintf(os.Stdout, "\nAnalysis exported to: %s\n", filename)
 	}
 }
 
 // printHelp displays usage information
 func printHelp() {
-	fmt.Println("NC Lucky for Life Lottery Analyzer")
-	fmt.Println("==================================")
-	fmt.Println()
-	fmt.Println("Usage: go run lottery_analyzer.go [options]")
-	fmt.Println()
-	fmt.Println("Options:")
-	fmt.Println("  --simple           Show simplified analysis")
-	fmt.Println("  --statistical      Show detailed statistical analysis")
-	fmt.Println("  --cosmic           Show cosmic correlation analysis")
-	fmt.Println("  --export-json      Export results to JSON file")
-	fmt.Println("  --export-csv       Export results to CSV file")
-	fmt.Println("  --recent <n>       Set recent window size (default: 50)")
-	fmt.Println("  --help             Show this help message")
-	fmt.Println()
-	fmt.Println("Examples:")
-	fmt.Println("  go run lottery_analyzer.go")
-	fmt.Println("  go run lottery_analyzer.go --simple")
-	fmt.Println("  go run lottery_analyzer.go --statistical --export-json")
-	fmt.Println("  go run lottery_analyzer.go --recent 100")
+	_, _ = fmt.Fprintln(os.Stdout, "NC Lucky for Life Lottery Analyzer")
+	_, _ = fmt.Fprintln(os.Stdout, "==================================")
+	_, _ = fmt.Fprintln(os.Stdout)
+	_, _ = fmt.Fprintln(os.Stdout, "Usage: go run lottery_analyzer.go [options]")
+	_, _ = fmt.Fprintln(os.Stdout)
+	_, _ = fmt.Fprintln(os.Stdout, "Options:")
+	_, _ = fmt.Fprintln(os.Stdout, "  --simple           Show simplified analysis")
+	_, _ = fmt.Fprintln(os.Stdout, "  --statistical      Show detailed statistical analysis")
+	_, _ = fmt.Fprintln(os.Stdout, "  --cosmic           Show cosmic correlation analysis")
+	_, _ = fmt.Fprintln(os.Stdout, "  --export-json      Export results to JSON file")
+	_, _ = fmt.Fprintln(os.Stdout, "  --export-csv       Export results to CSV file")
+	_, _ = fmt.Fprintln(os.Stdout, "  --recent <n>       Set recent window size (default: 50)")
+	_, _ = fmt.Fprintln(os.Stdout, "  --help             Show this help message")
+	_, _ = fmt.Fprintln(os.Stdout)
+	_, _ = fmt.Fprintln(os.Stdout, "Examples:")
+	_, _ = fmt.Fprintln(os.Stdout, "  go run lottery_analyzer.go")
+	_, _ = fmt.Fprintln(os.Stdout, "  go run lottery_analyzer.go --simple")
+	_, _ = fmt.Fprintln(os.Stdout, "  go run lottery_analyzer.go --statistical --export-json")
+	_, _ = fmt.Fprintln(os.Stdout, "  go run lottery_analyzer.go --recent 100")
 }

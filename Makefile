@@ -1,6 +1,10 @@
 # Go-Lucky Lottery Analyzer Makefile
 # Advanced lottery analysis with cosmic correlations
 
+# Include base make files
+include .make/common.mk
+include .make/go.mk
+
 # Variables
 BINARY_NAME=lottery-analyzer
 MAIN_FILES=lottery_analyzer.go cosmic_correlator.go
@@ -11,86 +15,58 @@ COVERAGE_FILE=coverage.out
 .DEFAULT_GOAL := help
 
 # PHONY targets
-.PHONY: help build test clean full-analysis simple statistical cosmic export-json export-csv coverage lint
+.PHONY: clean full-analysis simple statistical cosmic export-json export-csv
 
-## help: Display this help message
-help:
-	@echo "Go-Lucky Lottery Analyzer - Available Commands:"
-	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n\n"} /^[a-zA-Z_-]+:.*?##/ { printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
-	@echo ""
 
 ##@ Analysis Commands
 
 ## full-analysis: 🌟 Run COMPLETE analysis with cosmic correlations (RECOMMENDED)
-full-analysis: build
+full-analysis: ## Run full analysis with cosmic correlations
+	@$(make) build-go
 	@echo "╔══════════════════════════════════════════════════════════════╗"
 	@echo "║        🌌 RUNNING FULL COSMIC LOTTERY ANALYSIS 🌌             ║"
 	@echo "╚══════════════════════════════════════════════════════════════╝"
 	@echo ""
-	@./$(BINARY_NAME) --cosmic
+	@./bin/$(BINARY_NAME) --cosmic
 
 ## simple: Run simple analysis summary
-simple: build
-	@./$(BINARY_NAME) --simple
+simple: ## Run simple analysis summary
+	@$(make) build-go
+	@./bin/$(BINARY_NAME) --simple
 
 ## statistical: Run detailed statistical analysis
-statistical: build
-	@./$(BINARY_NAME) --statistical
+statistical: ## Run detailed statistical analysis
+	@$(make) build-go
+	@./bin/$(BINARY_NAME) --statistical
 
 ## cosmic: Run cosmic correlation analysis only
-cosmic: build
-	@./$(BINARY_NAME) --cosmic
+cosmic: ## Run cosmic correlation analysis only
+	@$(make) build-go
+	@./bin/$(BINARY_NAME) --cosmic
 
 ##@ Export Commands
 
 ## export-json: Export full analysis to JSON file
-export-json: build
+export-json: ## Export analysis data to JSON file
+	@$(make) build-go
 	@echo "📊 Exporting analysis to JSON..."
-	@./$(BINARY_NAME) --cosmic --export-json
+	@./bin/$(BINARY_NAME) --cosmic --export-json
 	@echo "✅ Export complete! Check lottery_analysis_*.json"
 
 ## export-csv: Export analysis data to CSV file
-export-csv: build
+export-csv: ## Export analysis data to CSV file
+	@$(make) build-go
 	@echo "📊 Exporting analysis to CSV..."
-	@./$(BINARY_NAME) --cosmic --export-csv
+	@./bin/$(BINARY_NAME) --cosmic --export-csv
 	@echo "✅ Export complete! Check lottery_analysis_*.csv"
 
-##@ Development Commands
-
-## build: Build the lottery analyzer binary
-build:
-	@echo "🔨 Building lottery analyzer..."
-	@go build -o $(BINARY_NAME) $(MAIN_FILES)
-	@echo "✅ Build complete: $(BINARY_NAME)"
-
-## test: Run all tests
-test:
-	@echo "🧪 Running tests..."
-	@go test -v -timeout=$(TEST_TIMEOUT) ./...
-
-## coverage: Run tests with coverage report
-coverage:
-	@echo "📊 Running tests with coverage..."
-	@go test -coverprofile=$(COVERAGE_FILE) -v ./...
-	@go tool cover -html=$(COVERAGE_FILE) -o coverage.html
-	@echo "✅ Coverage report generated: coverage.html"
-
-## lint: Run linters
-lint:
-	@echo "🔍 Running linters..."
-	@if command -v golangci-lint >/dev/null 2>&1; then \
-		golangci-lint run; \
-	else \
-		go vet ./...; \
-		go fmt ./...; \
-	fi
 
 ## clean: Clean build artifacts and generated files
-clean:
+clean: ## Clean up build artifacts and generated files
 	@echo "🧹 Cleaning up..."
+	@rm -rf bin/
 	@rm -f $(BINARY_NAME)
-	@rm -f $(COVERAGE_FILE) coverage.html
+	@rm -f $(COVERAGE_FILE) coverage.html coverage.txt coverage.out
 	@rm -f lottery_analysis_*.json lottery_analysis_*.csv
 	@rm -f test_*.csv debug_*.csv empty_*.csv invalid_*.csv
 	@echo "✅ Cleanup complete"
@@ -98,51 +74,33 @@ clean:
 ##@ Quick Analysis Sets
 
 ## lucky-picks: Generate 5 different analysis-based number sets
-lucky-picks: build
+lucky-picks: ## Generate 5 different analysis-based number sets
+	@$(make) build-go
 	@echo "🎰 Generating Lucky Picks..."
 	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-	@./$(BINARY_NAME) --simple | grep -A 10 "QUICK PICKS:" || true
+	@./bin/$(BINARY_NAME) --simple | grep -A 10 "QUICK PICKS:" || true
 	@echo ""
 	@echo "🌌 Cosmic Pick:"
-	@./$(BINARY_NAME) --simple | grep -A 1 "COSMIC PICK:" || true
+	@./bin/$(BINARY_NAME) --simple | grep -A 1 "COSMIC PICK:" || true
 	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 ## hot-numbers: Show current hot numbers
-hot-numbers: build
+hot-numbers: ## Show current hot numbers
+	@$(make) build-go
 	@echo "🔥 Current Hot Numbers:"
-	@./$(BINARY_NAME) --simple | grep -A 7 "TOP 5 HOT NUMBERS:" || true
+	@./bin/$(BINARY_NAME) --simple | grep -A 7 "TOP 5 HOT NUMBERS:" || true
 
 ## overdue: Show most overdue numbers
-overdue: build
+overdue: ## Show most overdue numbers
+	@$(make) build-go
 	@echo "⏰ Most Overdue Numbers:"
-	@./$(BINARY_NAME) --simple | grep -A 7 "TOP 5 OVERDUE:" || true
-
-##@ Utility Commands
-
-## install-deps: Install/update Go dependencies
-install-deps:
-	@echo "📦 Installing dependencies..."
-	@go mod download
-	@go mod tidy
-	@echo "✅ Dependencies installed"
-
-## update: Update dependencies to latest versions
-update:
-	@echo "🔄 Updating dependencies..."
-	@go get -u ./...
-	@go mod tidy
-	@echo "✅ Dependencies updated"
-
-## benchmark: Run performance benchmarks
-benchmark:
-	@echo "⚡ Running benchmarks..."
-	@go test -bench=. -benchmem -run=^$
+	@./bin/$(BINARY_NAME) --simple | grep -A 7 "TOP 5 OVERDUE:" || true
 
 # Special targets for fun
 .PHONY: cosmic-wisdom fortune
 
 ## cosmic-wisdom: Display cosmic lottery wisdom
-cosmic-wisdom:
+cosmic-wisdom: ## Display cosmic lottery wisdom
 	@echo ""
 	@echo "✨ ═══════════════════════════════════════════════════════ ✨"
 	@echo "   🌙 The moon influences tides, not lottery numbers! 🌙"
@@ -153,9 +111,10 @@ cosmic-wisdom:
 	@echo ""
 
 ## fortune: Get your lottery fortune
-fortune: build
+fortune: ## Get your lottery fortune
+	@$(make) build-go
 	@echo "🔮 Your Lottery Fortune:"
 	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-	@./$(BINARY_NAME) --simple | grep -A 1 "COSMIC PICK:" || echo "The stars are silent today..."
+	@./bin/$(BINARY_NAME) --simple | grep -A 1 "COSMIC PICK:" || echo "The stars are silent today..."
 	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 	@echo "Remember: Fortune favors the prepared... wallet! 💸"
