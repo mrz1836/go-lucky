@@ -525,8 +525,9 @@ body {
 .main-numbers {
     display: flex;
     gap: var(--space-sm);
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     justify-content: center;
+    align-items: center;
 }
 
 .number {
@@ -543,6 +544,7 @@ body {
     box-shadow: var(--shadow-md);
     font-size: 0.875rem;
     transition: all var(--transition-normal);
+    flex-shrink: 0;
 }
 
 .number:hover {
@@ -1034,6 +1036,20 @@ body {
         padding: 0 var(--space-md);
     }
     
+    .demo {
+        padding: var(--space-2xl) 0;
+    }
+    
+    .demo-grid {
+        gap: var(--space-lg);
+        margin: 0 var(--space-sm);
+    }
+    
+    .demo-card {
+        margin: 0;
+        padding: var(--space-lg);
+    }
+    
     .features-grid,
     .demo-grid {
         grid-template-columns: 1fr;
@@ -1153,13 +1169,39 @@ body {
     }
     
     .main-numbers {
-        gap: var(--space-md);
+        gap: var(--space-xs);
+        flex-wrap: nowrap;
+        justify-content: center;
+        overflow: visible;
+        width: 100%;
+        max-width: 280px;
+        margin: 0 auto;
     }
     
     .number {
-        width: 44px;
-        height: 44px;
+        width: 36px;
+        height: 36px;
+        font-size: 0.8rem;
+        flex-shrink: 0;
+        min-width: 36px;
+    }
+    
+    .lucky-ball .lucky {
+        width: 40px;
+        height: 40px;
         font-size: 1rem;
+        flex-shrink: 0;
+    }
+    
+    .number-set {
+        flex-direction: column;
+        gap: var(--space-lg);
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        max-width: 100%;
+        margin: 0 auto var(--space-lg);
+        padding: 0 var(--space-sm);
     }
     
     .lucky-ball .lucky {
@@ -1263,7 +1305,23 @@ body {
 
 @media (max-width: 480px) {
     .container {
-        padding: 0 var(--space-sm);
+        padding: 0 var(--space-md);
+    }
+    
+    .demo {
+        padding: var(--space-xl) 0;
+    }
+    
+    .demo-grid {
+        gap: var(--space-md);
+        margin: 0 var(--space-xs);
+        padding: 0 var(--space-xs);
+    }
+    
+    .demo-card {
+        margin: 0;
+        padding: var(--space-md) var(--space-sm);
+        min-height: auto;
     }
     
     .features-grid,
@@ -1273,7 +1331,6 @@ body {
     }
     
     .feature-card,
-    .demo-card,
     .usage-card {
         padding: var(--space-lg);
         margin: 0 var(--space-xs);
@@ -1379,11 +1436,21 @@ body {
     
     .main-numbers {
         flex-wrap: wrap;
-        justify-content: center;
-        gap: var(--space-sm);
+    .main-numbers {
+        gap: 1px;
+        max-width: 200px;
+        margin: 0 auto;
+        padding: 0;
     }
     
-    .number,
+    .number {
+        width: 32px;
+        height: 32px;
+        font-size: 0.7rem;
+        flex-shrink: 0;
+        min-width: 32px;
+    }
+    
     .lucky-ball .lucky {
         width: 40px;
         height: 40px;
@@ -1434,6 +1501,25 @@ body {
 }
 
 @media (max-width: 360px) {
+    .container {
+        padding: 0 var(--space-sm);
+    }
+    
+    .demo {
+        padding: var(--space-lg) 0;
+    }
+    
+    .demo-grid {
+        gap: var(--space-sm);
+        margin: 0;
+        padding: 0 var(--space-xs);
+    }
+    
+    .demo-card {
+        margin: 0;
+        padding: var(--space-md) var(--space-sm);
+    }
+    
     .hero-title {
         font-size: clamp(1.75rem, 9vw, 2.5rem);
     }
@@ -1443,7 +1529,6 @@ body {
     }
     
     .feature-card,
-    .demo-card,
     .usage-card {
         padding: var(--space-md);
     }
@@ -1464,14 +1549,42 @@ body {
     }
     
     .main-numbers {
-        gap: var(--space-xs);
+        gap: 2px;
+        flex-wrap: nowrap;
+        justify-content: center;
+        width: 100%;
+        max-width: 240px;
+        margin: 0 auto;
+        padding: 0;
     }
     
-    .number,
-    .lucky-ball .lucky {
+    .number {
         width: 36px;
         height: 36px;
-        font-size: 0.8rem;
+        font-size: 0.85rem;
+        flex-shrink: 0;
+    }
+    
+    .number-set {
+        gap: var(--space-sm);
+        margin: 0 auto var(--space-sm);
+        flex-shrink: 0;
+        min-width: 36px;
+    }
+    
+    .lucky-ball .lucky {
+        width: 38px;
+        height: 38px;
+        font-size: 0.9rem;
+        flex-shrink: 0;
+    }
+    
+    .number-set {
+        gap: var(--space-md);
+        padding: 0;
+        margin: 0 auto var(--space-md);
+        max-width: 100%;
+        overflow: visible;
     }
     
     .hero-stats {
@@ -1495,12 +1608,25 @@ body {
     }
 
     .demo-header {
-        margin-bottom: var(--space-lg);
+        margin-bottom: var(--space-md);
+        gap: var(--space-xs);
     }
 
     .demo-header h3 {
-        font-size: 1rem;
-        margin-bottom: var(--space-sm);
+        font-size: 0.95rem;
+        margin-bottom: 0;
+    }
+    
+    .cosmic-indicator {
+        gap: var(--space-sm);
+        font-size: 0.8rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .cosmic-date,
+    .current-day {
+        font-size: 0.8rem;
     }
 }
 
