@@ -13,14 +13,14 @@
   <tbody>
     <tr>
       <td valign="top" align="left">
+        <a href="https://github.com/mrz1836/go-lucky/releases">
+          <img src="https://img.shields.io/github/release-pre/mrz1836/go-lucky?logo=github&style=flat&v=1" alt="Latest Release">
+        </a><br/>
         <a href="https://github.com/mrz1836/go-lucky/actions">
           <img src="https://img.shields.io/github/actions/workflow/status/mrz1836/go-lucky/fortress.yml?branch=master&logo=github&style=flat" alt="Build Status">
         </a><br/>
         <a href="https://goreportcard.com/report/github.com/mrz1836/go-lucky">
           <img src="https://goreportcard.com/badge/github.com/mrz1836/go-lucky?style=flat" alt="Go Report Card">
-        </a><br/>
-        <a href="https://codecov.io/gh/mrz1836/go-lucky">
-          <img src="https://codecov.io/gh/mrz1836/go-lucky/branch/master/graph/badge.svg?style=flat" alt="Code Coverage">
         </a><br/>
         <a href="https://github.com/mrz1836/go-lucky/commits/master">
           <img src="https://img.shields.io/github/last-commit/mrz1836/go-lucky?style=flat&logo=clockify&logoColor=white" alt="Last commit">
@@ -41,8 +41,9 @@
         </a>
       </td>
       <td valign="top" align="left">
-        <img src="https://img.shields.io/badge/tests-passing-brightgreen?style=flat&logo=checkmarx" alt="Tests">
-        <br/>
+        <a href="https://codecov.io/gh/mrz1836/go-lucky">
+          <img src="https://codecov.io/gh/mrz1836/go-lucky/branch/master/graph/badge.svg?style=flat" alt="Code Coverage">
+        </a><br/>
         <img src="https://img.shields.io/badge/linter-0_issues-brightgreen?style=flat&logo=golangci-lint" alt="Linter">
         <br/>
         <img src="https://img.shields.io/badge/analysis-~1s-blue?style=flat&logo=stopwatch" alt="Performance">
