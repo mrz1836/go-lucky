@@ -301,11 +301,11 @@ Lottery drawings are random events, and no analysis can predict future outcomes.
 Check out the source code: https://github.com/mrz1836/go-lucky
 
 Current cosmic conditions:
-🌙 Moon Phase: New Moon (3% illuminated)
+🌙 Moon Phase: New Moon (1% illuminated)
 ♌ Zodiac Sign: Leo
-📅 Day: Wednesday
+📅 Day: Thursday
 
-🎯 Today's cosmic suggestion: New moon periods show balanced number distribution.
+🎯 Today's cosmic suggestion: New moon periods show balanced number distribution (1% illuminated).
 A mix of high and low numbers may be favorable.
 `);
 
