@@ -34,7 +34,7 @@
           <img src="https://pkg.go.dev/badge/github.com/mrz1836/go-lucky.svg?style=flat" alt="Go docs">
         </a><br/>
         <a href="LICENSE">
-          <img src="https://img.shields.io/github/license/mrz1836/go-lucky.svg?style=flat" alt="License">
+          <img src="https://img.shields.io/github/license/mrz1836/go-lucky.svg?style=flat&v=1" alt="License">
         </a><br/>
         <a href="Makefile">
           <img src="https://img.shields.io/badge/Makefile-supported-brightgreen?style=flat&logo=probot&logoColor=white" alt="Makefile Supported">
