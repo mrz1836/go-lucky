@@ -7,6 +7,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize animations
     initializeAnimations();
+    
+    // Initialize tracking
+    initializeTracking();
 });
 
 // Interactive elements
@@ -294,3 +297,327 @@ window.GoLucky = {
     generateRandomCosmicNumbers,
     generateRandomLuckyBall
 };
+
+// Google Analytics / GTM Tracking Functions
+function initializeTracking() {
+    console.log('🔍 Initializing tracking for external links and buttons...');
+    
+    // Track all external links
+    trackExternalLinks();
+    
+    // Track specific button interactions
+    trackButtonClicks();
+    
+    // Track scroll depth
+    trackScrollDepth();
+    
+    // Track time on page milestones
+    trackTimeOnPage();
+    
+    console.log('✅ Tracking initialized successfully');
+}
+
+function trackExternalLinks() {
+    // Get all external links (links that go to different domains or specific external sites)
+    const externalLinks = document.querySelectorAll('a[href^="http"], a[href^="https"], a[target="_blank"]');
+    
+    externalLinks.forEach(link => {
+        const href = link.getAttribute('href');
+        const text = link.textContent.trim();
+        
+        // Skip if it's an internal link to the same domain
+        if (href && (href.includes(window.location.hostname) || href.startsWith('/'))) {
+            return;
+        }
+        
+        link.addEventListener('click', function(e) {
+            const linkData = {
+                event_category: 'External Link',
+                event_label: href,
+                link_text: text,
+                link_url: href,
+                link_domain: getDomainFromUrl(href),
+                source_section: getSourceSection(this)
+            };
+            
+            // Send to Google Analytics 4
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'click_external_link', {
+                    event_category: linkData.event_category,
+                    event_label: linkData.event_label,
+                    link_text: linkData.link_text,
+                    link_url: linkData.link_url,
+                    link_domain: linkData.link_domain,
+                    source_section: linkData.source_section,
+                    value: 1
+                });
+            }
+            
+            // Send to Google Tag Manager (dataLayer)
+            if (typeof dataLayer !== 'undefined') {
+                dataLayer.push({
+                    event: 'external_link_click',
+                    link_category: linkData.event_category,
+                    link_text: linkData.link_text,
+                    link_url: linkData.link_url,
+                    link_domain: linkData.link_domain,
+                    source_section: linkData.source_section
+                });
+            }
+            
+            console.log('📊 External link tracked:', linkData);
+        });
+    });
+    
+    console.log(`🔗 Tracking ${externalLinks.length} external links`);
+}
+
+function trackButtonClicks() {
+    // Track all buttons and CTA elements
+    const buttons = document.querySelectorAll('.btn, button, .strategy-tab');
+    
+    buttons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            const buttonText = this.textContent.trim();
+            const buttonClass = this.className;
+            const isExternal = this.getAttribute('href') && !this.getAttribute('href').startsWith('#');
+            
+            const buttonData = {
+                event_category: 'Button Click',
+                event_label: buttonText,
+                button_type: getButtonType(this),
+                button_class: buttonClass,
+                source_section: getSourceSection(this),
+                is_external: isExternal
+            };
+            
+            // Send to Google Analytics 4
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'click_button', {
+                    event_category: buttonData.event_category,
+                    event_label: buttonData.event_label,
+                    button_type: buttonData.button_type,
+                    button_class: buttonData.button_class,
+                    source_section: buttonData.source_section,
+                    is_external: buttonData.is_external,
+                    value: 1
+                });
+            }
+            
+            // Send to Google Tag Manager
+            if (typeof dataLayer !== 'undefined') {
+                dataLayer.push({
+                    event: 'button_click',
+                    button_category: buttonData.event_category,
+                    button_text: buttonData.event_label,
+                    button_type: buttonData.button_type,
+                    button_class: buttonData.button_class,
+                    source_section: buttonData.source_section,
+                    is_external: buttonData.is_external
+                });
+            }
+            
+            console.log('🎯 Button click tracked:', buttonData);
+        });
+    });
+    
+    console.log(`🎯 Tracking ${buttons.length} buttons and interactive elements`);
+}
+
+function trackScrollDepth() {
+    const scrollMilestones = [25, 50, 75, 90, 100];
+    const reached = new Set();
+    
+    function checkScrollDepth() {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const scrollPercent = Math.round((scrollTop / docHeight) * 100);
+        
+        scrollMilestones.forEach(milestone => {
+            if (scrollPercent >= milestone && !reached.has(milestone)) {
+                reached.add(milestone);
+                
+                // Send to Google Analytics 4
+                if (typeof gtag !== 'undefined') {
+                    gtag('event', 'scroll_depth', {
+                        event_category: 'Engagement',
+                        event_label: `${milestone}%`,
+                        scroll_depth: milestone,
+                        value: milestone
+                    });
+                }
+                
+                // Send to Google Tag Manager
+                if (typeof dataLayer !== 'undefined') {
+                    dataLayer.push({
+                        event: 'scroll_depth',
+                        scroll_category: 'Engagement',
+                        scroll_percentage: milestone,
+                        scroll_label: `${milestone}%`
+                    });
+                }
+                
+                console.log(`📏 Scroll depth tracked: ${milestone}%`);
+            }
+        });
+    }
+    
+    // Throttled scroll listener
+    let scrollTimeout;
+    window.addEventListener('scroll', function() {
+        if (scrollTimeout) {
+            clearTimeout(scrollTimeout);
+        }
+        scrollTimeout = setTimeout(checkScrollDepth, 100);
+    });
+}
+
+function trackTimeOnPage() {
+    const timeMilestones = [30, 60, 120, 300, 600]; // 30s, 1m, 2m, 5m, 10m
+    const reached = new Set();
+    const startTime = Date.now();
+    
+    function checkTimeOnPage() {
+        const timeOnPage = Math.round((Date.now() - startTime) / 1000);
+        
+        timeMilestones.forEach(milestone => {
+            if (timeOnPage >= milestone && !reached.has(milestone)) {
+                reached.add(milestone);
+                
+                const minutes = Math.floor(milestone / 60);
+                const seconds = milestone % 60;
+                const timeLabel = minutes > 0 ? `${minutes}m${seconds > 0 ? ` ${seconds}s` : ''}` : `${seconds}s`;
+                
+                // Send to Google Analytics 4
+                if (typeof gtag !== 'undefined') {
+                    gtag('event', 'time_on_page', {
+                        event_category: 'Engagement',
+                        event_label: timeLabel,
+                        time_seconds: milestone,
+                        value: milestone
+                    });
+                }
+                
+                // Send to Google Tag Manager
+                if (typeof dataLayer !== 'undefined') {
+                    dataLayer.push({
+                        event: 'time_on_page',
+                        time_category: 'Engagement',
+                        time_seconds: milestone,
+                        time_label: timeLabel
+                    });
+                }
+                
+                console.log(`⏱️ Time on page tracked: ${timeLabel}`);
+            }
+        });
+    }
+    
+    // Check time milestones every 10 seconds
+    setInterval(checkTimeOnPage, 10000);
+}
+
+// Helper functions for tracking
+function getDomainFromUrl(url) {
+    try {
+        return new URL(url).hostname;
+    } catch (e) {
+        return 'unknown';
+    }
+}
+
+function getSourceSection(element) {
+    // Determine which section of the page the element is in
+    const section = element.closest('section, header, footer, nav');
+    if (section) {
+        // Try to get section class or ID
+        if (section.className) {
+            const classes = section.className.split(' ');
+            const sectionClass = classes.find(cls => 
+                ['hero', 'features', 'demo', 'usage', 'wisdom', 'disclaimer', 'footer'].includes(cls)
+            );
+            if (sectionClass) return sectionClass;
+        }
+        if (section.id) return section.id;
+        return section.tagName.toLowerCase();
+    }
+    return 'unknown';
+}
+
+function getButtonType(button) {
+    // Determine button type based on classes and context
+    const classes = button.className.toLowerCase();
+    
+    if (classes.includes('btn-primary')) return 'primary';
+    if (classes.includes('btn-secondary')) return 'secondary';
+    if (classes.includes('strategy-tab')) return 'strategy-tab';
+    if (button.tagName.toLowerCase() === 'button') return 'button';
+    if (button.tagName.toLowerCase() === 'a') return 'link';
+    
+    return 'unknown';
+}
+
+// Track specific cosmic interactions
+function trackCosmicInteraction(interactionType, details = {}) {
+    const eventData = {
+        event_category: 'Cosmic Interaction',
+        event_label: interactionType,
+        interaction_type: interactionType,
+        ...details
+    };
+    
+    // Send to Google Analytics 4
+    if (typeof gtag !== 'undefined') {
+        gtag('event', 'cosmic_interaction', eventData);
+    }
+    
+    // Send to Google Tag Manager
+    if (typeof dataLayer !== 'undefined') {
+        dataLayer.push({
+            event: 'cosmic_interaction',
+            cosmic_category: eventData.event_category,
+            cosmic_type: interactionType,
+            ...details
+        });
+    }
+    
+    console.log('🌌 Cosmic interaction tracked:', eventData);
+}
+
+// Enhanced cosmic selection update with tracking
+function updateCosmicSelection() {
+    const cosmicNumbers = generateRandomCosmicNumbers();
+    const luckyBall = generateRandomLuckyBall();
+    
+    const mainNumbers = document.querySelector('.cosmic-selection .main-numbers');
+    const luckyBallElement = document.querySelector('.cosmic-selection .lucky');
+    
+    if (mainNumbers && luckyBallElement) {
+        // Track the cosmic number generation
+        trackCosmicInteraction('number_generation', {
+            generated_numbers: cosmicNumbers.join('-'),
+            lucky_ball: luckyBall,
+            generation_type: 'automatic'
+        });
+        
+        // Animate out
+        mainNumbers.style.opacity = '0.5';
+        luckyBallElement.style.opacity = '0.5';
+        
+        setTimeout(() => {
+            // Update numbers
+            const numberElements = mainNumbers.querySelectorAll('.number');
+            cosmicNumbers.forEach((num, index) => {
+                if (numberElements[index]) {
+                    numberElements[index].textContent = num.toString().padStart(2, '0');
+                }
+            });
+            
+            luckyBallElement.textContent = luckyBall.toString();
+            
+            // Animate in
+            mainNumbers.style.opacity = '1';
+            luckyBallElement.style.opacity = '1';
+        }, 300);
+    }
+}
