@@ -1099,6 +1099,28 @@ body {
         gap: var(--space-sm);
         text-align: left;
     }
+
+    .demo-header {
+        flex-direction: column;
+        align-items: center;
+        gap: var(--space-sm);
+        text-align: center;
+    }
+
+    .demo-header h3 {
+        text-align: center;
+        width: 100%;
+    }
+
+    .cosmic-indicator {
+        justify-content: center;
+        text-align: center;
+    }
+
+    .cosmic-date,
+    .current-day {
+        text-align: center;
+    }
     
     .demo-card {
         padding: var(--space-lg);
@@ -1172,12 +1194,34 @@ body {
         text-align: center;
         padding: var(--space-md) var(--space-lg);
     }
+
+    .correlation-phase,
+    .correlation-number,
+    .correlation-value {
+        text-align: center;
+        width: 100%;
+    }
+
+    .correlation-item:hover {
+        transform: translateY(-2px);
+    }
     
     .pattern-item {
         flex-direction: column;
         gap: var(--space-xs);
         text-align: center;
         padding: var(--space-md) var(--space-lg);
+    }
+
+    .pattern-day,
+    .pattern-number,
+    .pattern-count {
+        text-align: center;
+        width: 100%;
+    }
+
+    .pattern-item:hover {
+        transform: translateY(-2px);
     }
     
     .section-header h2 {
@@ -1233,6 +1277,85 @@ body {
     .usage-card {
         padding: var(--space-lg);
         margin: 0 var(--space-xs);
+    }
+
+    .demo-card {
+        text-align: center;
+    }
+
+    .demo-header {
+        align-items: center;
+        text-align: center;
+        gap: var(--space-md);
+    }
+
+    .demo-header h3 {
+        font-size: 1.125rem;
+        text-align: center;
+        margin-bottom: 0;
+    }
+
+    .cosmic-indicator {
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        width: 100%;
+    }
+
+    .correlation-results {
+        gap: var(--space-md);
+    }
+
+    .correlation-item {
+        padding: var(--space-lg);
+        text-align: center;
+        border-radius: var(--border-radius-lg);
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .correlation-phase {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        margin-bottom: var(--space-xs);
+    }
+
+    .correlation-number {
+        font-size: 1.125rem;
+        font-weight: 700;
+        margin-bottom: var(--space-xs);
+    }
+
+    .correlation-value {
+        font-size: 1rem;
+        font-weight: 700;
+    }
+
+    .temporal-patterns {
+        gap: var(--space-md);
+    }
+
+    .pattern-item {
+        padding: var(--space-lg);
+        text-align: center;
+        border-radius: var(--border-radius-lg);
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .pattern-day {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        margin-bottom: var(--space-xs);
+    }
+
+    .pattern-number {
+        font-size: 1.125rem;
+        font-weight: 700;
+        margin-bottom: var(--space-xs);
+    }
+
+    .pattern-count {
+        font-size: 1rem;
+        color: var(--text-secondary);
     }
     
     .hero-stats {
@@ -1324,6 +1447,16 @@ body {
     .usage-card {
         padding: var(--space-md);
     }
+
+    .demo-card {
+        padding: var(--space-lg);
+        text-align: center;
+    }
+
+    .correlation-item,
+    .pattern-item {
+        padding: var(--space-md) var(--space-lg);
+    }
     
     .btn {
         max-width: 200px;
@@ -1359,6 +1492,15 @@ body {
     
     .stat-label {
         font-size: 0.875rem;
+    }
+
+    .demo-header {
+        margin-bottom: var(--space-lg);
+    }
+
+    .demo-header h3 {
+        font-size: 1rem;
+        margin-bottom: var(--space-sm);
     }
 }
 
