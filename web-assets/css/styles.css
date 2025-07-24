@@ -782,7 +782,7 @@ body {
 
 .wisdom-content {
     text-align: center;
-    max-width: 600px;
+    max-width: 800px;
     margin: 0 auto;
 }
 
@@ -822,11 +822,12 @@ body {
     opacity: 0;
     transform: translateY(20px);
     transition: all var(--transition-slow);
-    font-size: 1.5rem;
+    font-size: clamp(1.25rem, 3vw, 1.5rem);
     font-weight: 500;
     color: var(--text-primary);
     font-style: italic;
     margin: 0;
+    padding: 0 var(--space-md);
 }
 
 .wisdom-quote.active {
