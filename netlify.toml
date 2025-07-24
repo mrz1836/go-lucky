@@ -1,5 +1,5 @@
 [build]
-  publish = "."
+  publish = "web-assets"
   command = "npm run build"
 
 [build.environment]
