@@ -41,8 +41,6 @@
         </a>
       </td>
       <td valign="top" align="left">
-        <img src="https://img.shields.io/badge/coverage-89.8%25-brightgreen?style=flat&logo=codecov" alt="Test Coverage">
-        <br/>
         <img src="https://img.shields.io/badge/tests-passing-brightgreen?style=flat&logo=checkmarx" alt="Tests">
         <br/>
         <img src="https://img.shields.io/badge/linter-0_issues-brightgreen?style=flat&logo=golangci-lint" alt="Linter">
@@ -76,7 +74,7 @@
 * [Analysis Modes](#-analysis-modes)
 * [Cosmic Correlation Analysis](#-cosmic-correlation-analysis)
 * [Understanding the Output](#-understanding-the-output)
-* [Performance](#️-performance)
+* [Performance](#-performance)
 * [Testing & Development](#-testing--development)
 * [Make Commands Reference](#-make-commands-reference)
 * [Mathematical Insights](#-mathematical-insights)
@@ -424,14 +422,14 @@ go-lucky is optimized for speed and efficiency:
 ### 🧪 Benchmark Results
 Based on Apple M1 Max testing with 3,653+ drawings:
 
-| Operation                    | Time (ms) | Operations/sec | Memory (MB) |
-|------------------------------|-----------|----------------|-------------|
-| Data Loading (CSV Parsing)   | 11.9      | 84            | 5.7         |
-| Recommendation Generation    | 0.59      | 1,684         | 0.03        |
-| Pattern Analysis             | 0.35      | 2,844         | 0.11        |
-| Cosmic Correlations          | 2,300     | 0.43          | 45          |
-| Report Generation            | 0.2       | 5,000         | 0.01        |
-| **Full Analysis Total**      | **~2,313** | **0.43**     | **51**      |
+| Operation                  | Time (ms)  | Operations/sec | Memory (MB) |
+|----------------------------|------------|----------------|-------------|
+| Data Loading (CSV Parsing) | 11.9       | 84             | 5.7         |
+| Recommendation Generation  | 0.59       | 1,684          | 0.03        |
+| Pattern Analysis           | 0.35       | 2,844          | 0.11        |
+| Cosmic Correlations        | 2,300      | 0.43           | 45          |
+| Report Generation          | 0.2        | 5,000          | 0.01        |
+| **Full Analysis Total**    | **~2,313** | **0.43**       | **51**      |
 
 *Performance measured on Apple M1 Max. Results vary by system and dataset size.*
 
