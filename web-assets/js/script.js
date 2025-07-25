@@ -13,6 +13,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize version display
     initializeVersionDisplay();
+    
+    // Initialize dynamic date
+    updateCosmicDate();
 });
 
 // Interactive elements
@@ -728,4 +731,35 @@ function updateCosmicSelection() {
             luckyBallElement.style.opacity = '1';
         }, 300);
     }
+    
+    // Update the date as well
+    updateCosmicDate();
 }
+
+// Update cosmic date to current browser time
+function updateCosmicDate() {
+    const cosmicDateElement = document.querySelector('.cosmic-date');
+    if (cosmicDateElement) {
+        const now = new Date();
+        const options = { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric',
+            timeZone: 'America/New_York' // Eastern Time for consistency
+        };
+        
+        const formattedDate = now.toLocaleDateString('en-US', options);
+        
+        // Animate the date change
+        cosmicDateElement.style.opacity = '0.7';
+        setTimeout(() => {
+            cosmicDateElement.textContent = formattedDate;
+            cosmicDateElement.style.opacity = '1';
+        }, 150);
+        
+        console.log(`🗓️ Cosmic date updated to: ${formattedDate}`);
+    }
+}
+
+// Update cosmic date every minute to keep it current for long sessions
+setInterval(updateCosmicDate, 60000);
