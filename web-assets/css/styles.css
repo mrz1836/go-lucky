@@ -759,6 +759,8 @@ body {
     border-radius: var(--border-radius);
     padding: var(--space-lg);
     text-align: left;
+    overflow-x: auto;
+    word-wrap: break-word;
 }
 
 .code-block pre {
@@ -768,6 +770,8 @@ body {
     line-height: 1.5;
     color: var(--text-primary);
     overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
 }
 
 .code-block code {
@@ -1275,9 +1279,19 @@ body {
         padding: 0 var(--space-sm);
     }
     
+    .usage-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-lg);
+        margin: 0 var(--space-sm);
+        max-width: none;
+    }
+    
     .usage-card {
         padding: var(--space-lg);
         text-align: center;
+        margin: 0;
+        width: 100%;
+        box-sizing: border-box;
     }
     
     .usage-icon {
@@ -1286,11 +1300,16 @@ body {
     
     .code-block {
         padding: var(--space-md);
+        font-size: 0.8rem;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
     }
     
     .code-block pre {
         font-size: 0.8rem;
         line-height: 1.4;
+        white-space: pre-wrap;
+        word-break: break-all;
     }
     
     .wisdom-content {
@@ -1330,10 +1349,24 @@ body {
         grid-template-columns: 1fr;
     }
     
+    .usage-grid {
+        gap: var(--space-md);
+        margin: 0 var(--space-xs);
+        padding: 0;
+    }
+    
     .feature-card,
     .usage-card {
         padding: var(--space-lg);
         margin: 0 var(--space-xs);
+        width: auto;
+        box-sizing: border-box;
+    }
+    
+    .usage-card {
+        padding: var(--space-lg) var(--space-md);
+        margin: 0;
+        border-radius: var(--border-radius);
     }
 
     .demo-card {
@@ -1498,6 +1531,19 @@ body {
         padding: var(--space-md);
         margin: var(--space-md) 0;
     }
+    
+    .code-block {
+        padding: var(--space-sm);
+        font-size: 0.75rem;
+    }
+    
+    .code-block pre {
+        font-size: 0.75rem;
+        line-height: 1.3;
+        white-space: pre-wrap;
+        word-break: break-all;
+        overflow-wrap: break-word;
+    }
 }
 
 @media (max-width: 360px) {
@@ -1528,9 +1574,58 @@ body {
         font-size: 1rem;
     }
     
+    .usage {
+        padding: var(--space-2xl) 0;
+    }
+    
+    .usage-grid {
+        gap: var(--space-sm);
+        margin: 0;
+        padding: 0 var(--space-xs);
+    }
+    
     .feature-card,
     .usage-card {
         padding: var(--space-md);
+        margin: 0;
+        width: auto;
+        box-sizing: border-box;
+    }
+    
+    .usage-card {
+        padding: var(--space-md);
+        text-align: center;
+        border-radius: var(--border-radius);
+        background: var(--bg-card);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .usage-icon {
+        width: 50px;
+        height: 50px;
+        margin: 0 auto var(--space-md);
+    }
+    
+    .usage-card h3 {
+        font-size: 1.125rem;
+        margin-bottom: var(--space-md);
+    }
+    
+    .code-block {
+        padding: var(--space-sm);
+        font-size: 0.7rem;
+        border-radius: var(--border-radius);
+        overflow-x: auto;
+        word-wrap: break-word;
+    }
+    
+    .code-block pre {
+        font-size: 0.7rem;
+        line-height: 1.2;
+        white-space: pre-wrap;
+        word-break: break-all;
+        overflow-wrap: break-word;
+        margin: 0;
     }
 
     .demo-card {
