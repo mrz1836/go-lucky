@@ -16,6 +16,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize dynamic date
     updateCosmicDate();
+    
+    // Initialize copyright year
+    updateCopyrightYear();
 });
 
 // Interactive elements
@@ -763,3 +766,13 @@ function updateCosmicDate() {
 
 // Update cosmic date every minute to keep it current for long sessions
 setInterval(updateCosmicDate, 60000);
+
+// Update copyright year
+function updateCopyrightYear() {
+    const yearElement = document.getElementById('copyright-year');
+    if (yearElement) {
+        const currentYear = new Date().getFullYear();
+        yearElement.textContent = currentYear;
+        console.log(`© Copyright year updated to: ${currentYear}`);
+    }
+}
