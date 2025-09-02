@@ -1,0 +1,118 @@
+# ------------------------------------------------------------------------------------
+#  Setup MAGE-X Composite Action (GoFortress)
+#
+#  Purpose: Install and cache MAGE-X binary for use in GitHub Actions workflows.
+#  Provides efficient caching by OS and version, with automatic installation on cache
+#  miss and PATH management for seamless integration.
+#
+#  Features:
+#    - Smart binary caching by OS and version
+#    - Automatic installation only on cache miss
+#    - PATH management for immediate availability
+#    - Performance tracking outputs
+#
+#  Usage:
+#    - uses: ./.github/actions/setup-magex
+#      with:
+#        magex-version: ${{ env.MAGE_X_VERSION }}
+#        runner-os: ${{ runner.os }}
+#
+#  Maintainer: @mrz1836
+#
+# ------------------------------------------------------------------------------------
+
+name: "Setup MAGE-X"
+description: "Install and cache MAGE-X binary with automatic PATH management"
+
+inputs:
+  magex-version:
+    description: "MAGE-X version to install (e.g., v1.15.0)"
+    required: true
+  runner-os:
+    description: "Runner OS for cache key (e.g., ubuntu-latest, windows-latest)"
+    required: true
+
+outputs:
+  cache-hit:
+    description: "Whether MAGE-X was restored from cache (true/false)"
+    value: ${{ steps.magex-cache.outputs.cache-hit }}
+  installation-method:
+    description: "How MAGE-X was obtained: cached, fresh, or pre-existing"
+    value: ${{ steps.installation-summary.outputs.method }}
+
+runs:
+  using: "composite"
+  steps:
+    # ————————————————————————————————————————————————————————————————
+    # Restore (and later save) a compact cache for the magex binary
+    # ————————————————————————————————————————————————————————————————
+    - name: 💾 Restore magex binary cache
+      id: magex-cache
+      uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809 # v4.2.4
+      with:
+        path: |
+          ~/.cache/magex-bin
+        key: ${{ inputs.runner-os }}-magex-${{ inputs.magex-version }}
+
+    # ————————————————————————————————————————————————————————————————
+    # Make cached magex usable by copying to GOPATH/bin and adding to PATH
+    # ————————————————————————————————————————————————————————————————
+    - name: 🛠️ Make cached magex usable
+      shell: bash
+      run: |
+        set -euo pipefail
+        BIN_DIR="$HOME/.cache/magex-bin"
+        MAGEX_BIN="$BIN_DIR/magex"
+
+        # If we restored a cache, copy/link it into GOPATH/bin.
+        if [[ -f "$MAGEX_BIN" ]]; then
+          echo "✅ Using cached magex binary"
+          mkdir -p "$(go env GOPATH)/bin"
+          cp "$MAGEX_BIN" "$(go env GOPATH)/bin/"
+        fi
+
+        # Make sure the binary location is on PATH for *all* subsequent steps.
+        echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+
+    # ————————————————————————————————————————————————————————————————
+    # Install MAGE-X *only* when the cache was empty.
+    # ————————————————————————————————————————————————————————————————
+    - name: ✅ Install MAGE-X (cache miss)
+      if: steps.magex-cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        echo "⬇️ Cache miss – installing MAGE-X..."
+        echo "📋 Installing MAGE-X version ${{ inputs.magex-version }}..."
+        go install github.com/mrz1836/mage-x/cmd/magex@${{ inputs.magex-version }}
+
+        # Copy the freshly built binary back into the cache directory
+        mkdir -p ~/.cache/magex-bin
+        cp "$(go env GOPATH)/bin/magex" ~/.cache/magex-bin/
+        echo "✅ MAGE-X installed and stored in cache"
+
+    # ————————————————————————————————————————————————————————————————
+    # Verify MAGE-X installation and set outputs
+    # ————————————————————————————————————————————————————————————————
+    - name: 🔍 Verify MAGE-X installation
+      id: installation-summary
+      shell: bash
+      run: |
+        echo "🔍 Verifying MAGE-X installation..."
+
+        # Test that magex is available and working
+        if command -v magex >/dev/null 2>&1; then
+          MAGEX_VERSION=$(magex --version 2>/dev/null | grep -oE 'Version:\s+[0-9.]+' | awk '{print $2}' || echo "unknown")
+          echo "✅ MAGE-X is available: $MAGEX_VERSION"
+
+          # Determine installation method
+          if [[ "${{ steps.magex-cache.outputs.cache-hit }}" == "true" ]]; then
+            echo "method=cached" >> $GITHUB_OUTPUT
+            echo "📋 Installation method: Restored from cache"
+          else
+            echo "method=fresh" >> $GITHUB_OUTPUT
+            echo "📋 Installation method: Fresh installation"
+          fi
+        else
+          echo "❌ ERROR: MAGE-X is not available in PATH" >&2
+          exit 1
+        fi

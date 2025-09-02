@@ -1,14 +1,14 @@
 # ------------------------------------------------------------------------------------
-#  Test Makefile (Reusable Workflow) (GoFortress)
+#  Test MAGE-X (Reusable Workflow) (GoFortress)
 #
-#  Purpose: Verify that the Makefile exists, compiles correctly, and contains all
-#  required targets. This is a prerequisite for other workflows that use make commands.
+#  Purpose: Verify that MAGE-X is installed and working correctly with standard
+#  magex commands. This is a prerequisite for other workflows that use magex commands.
 #
 #  Maintainer: @mrz1836
 #
 # ------------------------------------------------------------------------------------
 
-name: GoFortress (Test Makefile)
+name: GoFortress (Test MAGE-X)
 
 on:
   workflow_call:
@@ -22,15 +22,16 @@ on:
         required: true
         type: string
 
+# Security: Restrictive default permissions with job-level overrides for least privilege access
 permissions:
   contents: read
 
 jobs:
   # ----------------------------------------------------------------------------------
-  # Test Makefile (Compilation and Help Verification)
+  # Test MAGE-X (Installation and Command Verification)
   # ----------------------------------------------------------------------------------
-  test-makefile:
-    name: 📋 Verify & Test Makefile
+  test-magex:
+    name: 🪄 Verify & Test MAGE-X
     runs-on: ${{ inputs.primary-runner }}
     steps:
       # ————————————————————————————————————————————————————————————————
@@ -53,66 +54,56 @@ jobs:
         with:
           fetch-depth: 0 # Required for sparse checkout
           sparse-checkout: |
-            .make
-            Makefile
+            .github/.env.base
+            .github/actions/setup-magex
+            .mage.yaml
             go.mod
             go.sum
 
       # ————————————————————————————————————————————————————————————————
-      # Verify the Makefile compiles and runs
+      # Setup MAGE-X using the reusable composite action
       # ————————————————————————————————————————————————————————————————
-      - name: ✅ Verify make help compiles
-        run: |
-          echo "📋 Running makefile..."
-          make help
-          echo "✅ Makefile ran successfully"
+      - name: 🔧 Setup MAGE-X
+        id: setup-magex
+        uses: ./.github/actions/setup-magex
+        with:
+          magex-version: ${{ env.MAGE_X_VERSION }}
+          runner-os: ${{ inputs.primary-runner }}
 
-      - name: ✅ Verify make help and required commands
-        id: verify-make
+      # ————————————————————————————————————————————————————————————————
+      # Verify MAGE-X installation and required commands
+      # ————————————————————————————————————————————————————————————————
+      - name: ✅ Verify magex help and required commands
+        id: verify-magex
         run: |
-          echo "📋 Testing for required make targets..."
+          echo "📋 Testing for required magex commands..."
 
           # Capture help output
-          HELP_OUTPUT=$(make help)
+          HELP_OUTPUT=$(magex help)
 
           echo "$HELP_OUTPUT"
 
-          # List of required make targets
+          # List of required magex commands
           REQUIRED_COMMANDS=(
-            bench
-            build-go
-            coverage
-            fumpt
-            generate
-            godocs
-            govulncheck-install
-            help
-            install-go
-            install-stdlib
-            loc
-            lint
-            lint-version
-            mod-download
-            mod-tidy
-            pre-build
-            test
-            test-ci
-            test-ci-no-race
-            test-cover
-            test-cover-race
-            test-fuzz
-            test-no-lint
-            test-parallel
-            test-race
-            test-short
-            uninstall
-            update
-            vet
-            vet-parallel
-            release
-            tag
-            tag-remove
-            tag-update
+            "bench"
+            "clean"
+            "deps:download"
+            "deps:update"
+            "format:fix"
+            "lint"
+            "metrics:coverage"
+            "metrics:loc"
+            "release"
+            "release:validate"
+            "test"
+            "test:cover"
+            "test:coverrace"
+            "test:fuzz"
+            "test:race"
+            "tidy"
+            "update:install"
+            "version:bump"
+            "vet"
           )
 
           MATCHED_COUNT=0
@@ -120,14 +111,14 @@ jobs:
           MISSING_COMMANDS=()
 
           echo ""
-          echo "🔍 Verifying required make targets..."
+          echo "🔍 Verifying required magex commands..."
 
           for cmd in "${REQUIRED_COMMANDS[@]}"; do
-            if echo "$HELP_OUTPUT" | grep -qE "^$cmd[[:space:]]"; then
+            if echo "$HELP_OUTPUT" | grep -qE "^[[:space:]]*$cmd[[:space:]]"; then
               echo "✅ Found: $cmd"
               MATCHED_COUNT=$((MATCHED_COUNT + 1))
             else
-              echo "❌ Missing required target: $cmd"
+              echo "❌ Missing required command: $cmd"
               MISSING_COMMANDS+=("$cmd")
               MISSING_COUNT=$((MISSING_COUNT + 1))
             fi
@@ -144,31 +135,32 @@ jobs:
           # Fail if anything is missing
           if [ $MISSING_COUNT -gt 0 ]; then
             echo ""
-            echo "🚨 Missing Makefile targets:"
+            echo "🚨 Missing MAGE-X commands:"
             printf ' - %s\n' "${MISSING_COMMANDS[@]}"
             exit 1
           fi
 
           echo ""
-          echo "✅ Makefile verification completed successfully."
+          echo "✅ MAGE-X verification completed successfully."
 
       # ————————————————————————————————————————————————————————————————
-      # Summary of Makefile verification
+      # Summary of MAGE-X verification
       # ————————————————————————————————————————————————————————————————
       - name: 📊 Job Summary
         run: |
-          echo "## 📋 Makefile Verification Summary" >> $GITHUB_STEP_SUMMARY
+          echo "## 🪄 MAGE-X Verification Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| 🔧 Verification Details | ✅ Status |" >> $GITHUB_STEP_SUMMARY
           echo "|---|---|" >> $GITHUB_STEP_SUMMARY
-          echo "| **Test** | make help command |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Purpose** | Verify Makefile syntax and functionality |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Matched Targets** | ${{ steps.verify-make.outputs.matched }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Missing Targets** | ${{ steps.verify-make.outputs.missing }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Test** | magex help command |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Installation** | ${{ steps.setup-magex.outputs.installation-method == 'cached' && '💾 From cache' || '📥 Fresh install' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Purpose** | Verify MAGE-X installation and standard commands |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Matched Commands** | ${{ steps.verify-magex.outputs.matched }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Missing Commands** | ${{ steps.verify-magex.outputs.missing }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
-          if [[ "${{ steps.verify-make.outputs.missing }}" != "0" ]]; then
-            echo "🚨 **Missing Targets:** ${{ steps.verify-make.outputs.missing_commands }}" >> $GITHUB_STEP_SUMMARY
+          if [[ "${{ steps.verify-magex.outputs.missing }}" != "0" ]]; then
+            echo "🚨 **Missing Commands:** ${{ steps.verify-magex.outputs.missing_commands }}" >> $GITHUB_STEP_SUMMARY
           else
-            echo "🎯 **Makefile is properly configured and functional.**" >> $GITHUB_STEP_SUMMARY
+            echo "🎯 **MAGE-X is properly configured and functional.**" >> $GITHUB_STEP_SUMMARY
           fi

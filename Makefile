@@ -21,7 +21,7 @@ COVERAGE_FILE=coverage.out
 
 ## full-analysis: 🌟 Run COMPLETE analysis with cosmic correlations (RECOMMENDED)
 full-analysis: ## Run full analysis with cosmic correlations
-	@$(MAKE) build-go
+	@magex build:dev
 	@echo "╔══════════════════════════════════════════════════════════════╗"
 	@echo "║        🌌 RUNNING FULL COSMIC LOTTERY ANALYSIS 🌌            ║"
 	@echo "╚══════════════════════════════════════════════════════════════╝"
@@ -30,31 +30,31 @@ full-analysis: ## Run full analysis with cosmic correlations
 
 ## simple: Run simple analysis summary
 simple: ## Run simple analysis summary
-	@$(MAKE) build-go
+	@magex build:dev
 	@./bin/$(BINARY_NAME) --simple
 
 ## statistical: Run detailed statistical analysis
 statistical: ## Run detailed statistical analysis
-	@$(MAKE) build-go
+	@magex build:dev
 	@./bin/$(BINARY_NAME) --statistical
 
 ## cosmic: Run cosmic correlation analysis only
 cosmic: ## Run cosmic correlation analysis only
-	@$(MAKE) build-go
+	@magex build:dev
 	@./bin/$(BINARY_NAME) --cosmic
 
 ##@ Export Commands
 
 ## export-json: Export full analysis to JSON file
 export-json: ## Export analysis data to JSON file
-	@$(MAKE) build-go
+	@magex build:dev
 	@echo "📊 Exporting analysis to JSON..."
 	@./bin/$(BINARY_NAME) --cosmic --export-json
 	@echo "✅ Export complete! Check lottery_analysis_*.json"
 
 ## export-csv: Export analysis data to CSV file
 export-csv: ## Export analysis data to CSV file
-	@$(MAKE) build-go
+	@magex build:dev
 	@echo "📊 Exporting analysis to CSV..."
 	@./bin/$(BINARY_NAME) --cosmic --export-csv
 	@echo "✅ Export complete! Check lottery_analysis_*.csv"
@@ -78,7 +78,7 @@ benchmark: ## Run performance benchmarks
 
 ## lucky-picks: Generate 5 different analysis-based number sets
 lucky-picks: ## Generate 5 different analysis-based number sets
-	@$(MAKE) build-go
+	@magex build:dev
 	@echo "🎰 Generating Lucky Picks..."
 	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 	@./bin/$(BINARY_NAME) --simple | grep -A 10 "QUICK PICKS:" || true
@@ -89,13 +89,13 @@ lucky-picks: ## Generate 5 different analysis-based number sets
 
 ## hot-numbers: Show current hot numbers
 hot-numbers: ## Show current hot numbers
-	@$(MAKE) build-go
+	@magex build:dev
 	@echo "🔥 Current Hot Numbers:"
 	@./bin/$(BINARY_NAME) --simple | grep -A 7 "TOP 5 HOT NUMBERS:" || true
 
 ## overdue: Show most overdue numbers
 overdue: ## Show most overdue numbers
-	@$(MAKE) build-go
+	@magex build:dev
 	@echo "⏰ Most Overdue Numbers:"
 	@./bin/$(BINARY_NAME) --simple | grep -A 7 "TOP 5 OVERDUE:" || true
 
@@ -115,7 +115,7 @@ cosmic-wisdom: ## Display cosmic lottery wisdom
 
 ## fortune: Get your lottery fortune
 fortune: ## Get your lottery fortune
-	@$(MAKE) build-go
+	@magex build:dev
 	@echo "🔮 Your Lottery Fortune:"
 	@echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 	@./bin/$(BINARY_NAME) --simple | grep -A 1 "COSMIC PICK:" || echo "The stars are silent today..."

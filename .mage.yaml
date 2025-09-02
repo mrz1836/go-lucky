@@ -1,0 +1,16 @@
+project:
+  name: go-lucky
+  binary: go-lucky
+  module: github.com/mrz1836/go-lucky
+  main: ./main.go
+
+build:
+  # Custom ldflags with version injection
+  ldflags:
+    - "-s -w"
+    - "-X main.version={{.Version}}"
+    - "-X main.commit={{.Commit}}"
+    - "-X main.buildDate={{.Date}}"
+  flags:
+    - "-trimpath"
+  output: "./cmd/go-lucky"
