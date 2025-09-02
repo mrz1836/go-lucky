@@ -1,8 +1,8 @@
 project:
   name: go-lucky
-  binary: go-lucky
+  binary: lottery-analyzer
   module: github.com/mrz1836/go-lucky
-  main: ./main.go
+  main: ./cmd/go-lucky/main.go
 
 build:
   # Custom ldflags with version injection
@@ -13,4 +13,4 @@ build:
     - "-X main.buildDate={{.Date}}"
   flags:
     - "-trimpath"
-  output: "./cmd/go-lucky"
+  output: "./bin/lottery-analyzer"
