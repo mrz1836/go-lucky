@@ -13,5 +13,5 @@ rules:
   - "PR titles use '[Subsystem] Imperative and concise summary'"
   - "PR descriptions include: What Changed, Why It Was Necessary, Testing Performed, Impact / Risk"
   - "Run 'go mod tidy' after import changes"
-  - "Run 'make govulncheck' when dependencies change"
+  - "Run 'magex govulncheck' when dependencies change"
   - "Report vulnerabilities privately following SECURITY.md"

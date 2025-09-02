@@ -70,7 +70,7 @@ Created in `testdata/fuzz/` directory:
 
 ### All Fuzz Tests
 ```bash
-make test-fuzz
+magex test:fuzz
 ```
 
 ### Individual Test

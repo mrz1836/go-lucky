@@ -21,7 +21,7 @@ Additional `AGENTS.md` files **may exist in subdirectories** to provide more con
 |---------------|---------------------------------------------------------------------------|
 | `.github/`    | Issue templates, workflows, and community documentation                   |
 | `.vscode/`    | VS Code settings and extensions for development                           |
-| `.make/`      | Shared Makefile targets used by `Makefile`                                |
+| `magefile.go` | Mage build targets and task definitions                                   |
 | `examples/`   | Example program demonstrating package usage                               |
 | `docs/`       | Any additional documentation, guides, or design documents for the project |
 | `testdata/`   | Test data files used by unit tests and fuzz tests                         |
@@ -396,8 +396,8 @@ govulncheck ./...
 go get -u ./...  # Update to latest minor/patch versions
 go mod tidy
 
-# ✅ Use Makefile for common tasks
-make update # updates dependencies and runs go mod tidy
+# ✅ Use Magefile for common tasks
+magex deps:tidy # updates dependencies and runs go mod tidy
 
 # 🚫 Avoid using `replace` unless absolutely necessary
 # go.mod
@@ -415,7 +415,7 @@ replace github.com/some/dependency => github.com/some/dependency v1.2.3
 
 Write code that performs well by default, and measure when optimization is needed.
 
-* **Use `make bench`** to establish performance baselines
+* **Use `magex benchmark`** to establish performance baselines
 * **Profile with `go tool pprof`** when investigating performance issues
 * **Avoid premature optimization** — write clear code first, optimize bottlenecks later
 * **Use benchmarks** to validate that optimizations actually improve performance
@@ -463,7 +463,7 @@ Code must be cleanly formatted and pass all linters before being committed.
 go fmt ./...
 goimports -w .
 gofumpt -w .
-make lint
+magex lint
 go vet ./...
 ```
 
@@ -537,9 +537,9 @@ Run tests locally with:
 go test ./...
 ```
 
-Or use our makefile:
+Or use our magefile:
 ```bash
-make test
+magex test
 ```
 
 > All tests must pass in CI prior to merge.
@@ -566,21 +566,20 @@ Best practices:
 
 <br/>
 
-## 🛠 Makefile Overview
+## 🛠 Magefile Overview
 
-The repository's `Makefile` includes reusable targets from `.make/common.mk` and
-`.make/go.mk`. The root file exposes a few high-level commands while the files
-under `.make` contain the bulk of the build logic.
+The repository uses a `magefile.go` with mage/magex for build automation instead of traditional Makefiles. The magefile provides organized namespaces for different types of tasks.
 
-`common.mk` provides utility tasks for releasing with GoReleaser, tagging
-releases, and updating the releaser tool. It also offers the `diff` and `help`
-commands used across projects.
+The magefile includes namespaces for:
+- **Build**: Development and production builds
+- **Analysis**: Lottery analysis commands
+- **Export**: Data export utilities
+- **Quick**: Fast analysis commands
+- **Fun**: Entertainment commands
 
-`go.mk` supplies Go-specific helpers for linting, testing, generating code,
-building binaries, and updating dependencies. Targets such as `lint`, `test`,
-`test-ci`, and `coverage` are defined here and invoked by the root `Makefile`.
+Tasks include linting, testing, generating code, building binaries, and updating dependencies. All tasks are organized into logical namespaces for better discoverability.
 
-Use `make help` to view the full list of supported commands.
+Use `magex -l` to view the full list of supported commands.
 
 <br/>
 
@@ -993,8 +992,8 @@ We follow **Semantic Versioning (✧ SemVer)**:
 
 | Step | Command                         | Purpose                                                                                            |
 |------|---------------------------------|----------------------------------------------------------------------------------------------------|
-| 1    | `make release-snap`             | Build & upload a **snapshot** (pre‑release) for quick CI validation.                               |
-| 2    | `make tag version=X.Y.Z`        | Create and push a signed Git tag. Triggers GitHub Actions to package the release                   |
+| 1    | `magex release:snap`            | Build & upload a **snapshot** (pre‑release) for quick CI validation.                               |
+| 2    | `magex tag version=X.Y.Z`       | Create and push a signed Git tag. Triggers GitHub Actions to package the release                   |
 | 3    | GitHub Actions                  | CI runs `goreleaser release` on the tag; artifacts and changelog are published to GitHub Releases. |
 
 > **Note for AI Agents:** Do not create or push tags automatically. Only the repository [codeowners](CODEOWNERS) are authorized to tag and publish official releases.
@@ -1076,9 +1075,9 @@ Current labels are located in `.github/labels.yml` and automatically synced into
 CI automatically runs on every PR to verify:
 
 * Formatting (`go fmt` and `goimports` and `gofumpt`)
-* Linting (`make lint`)
-* Tests (`make test`)
-* Fuzz tests (if applicable) (`make run-fuzz-tests`)
+* Linting (`magex lint`)
+* Tests (`magex test`)
+* Fuzz tests (if applicable) (`magex test:fuzz`)
 * This codebase uses GitHub Actions; test workflows reside in `.github/workflows/fortress.yml` and `.github/workflows/fortress-test-suite.yml`.
 * Pin each external GitHub Action to a **full commit SHA** (e.g., `actions/checkout@2f3b4a2e0e471e13e2ea2bc2a350e888c9cf9b75`) as recommended by GitHub's [security hardening guidance](https://docs.github.com/en/actions/security-guides/security-hardening-for-github-actions#using-pinned-actions). Dependabot will track and update these pinned versions automatically.
 
@@ -1123,9 +1122,9 @@ Dependency hygiene is critical for security, reproducibility, and developer expe
   govulncheck ./...
 ```
 
-* Run via make command:
+* Run via magex command:
 ```bash
-  make govulncheck
+  magex govulncheck
 ```
 
 * Run [gitleaks](https://github.com/gitleaks/gitleaks) before committing code to detect hardcoded secrets or sensitive data in the repository:

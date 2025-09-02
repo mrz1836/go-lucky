@@ -33,11 +33,11 @@ This is a sophisticated lottery analysis tool for NC Lucky for Life lottery data
    - Edge case handling
    - Cosmic correlation testing
 
-4. **lucky-numbers-history.csv** - Historical drawing data
+4. **data/lucky-numbers-history.csv** - Historical drawing data
    - Format: Date, 5 main numbers (1-48), 1 lucky ball (1-18)
    - 2000+ historical drawings for analysis
 
-5. **Makefile** - Build and analysis commands
+5. **magefile.go** - Build and analysis commands
    - Full-featured analysis commands
    - Development and testing tools
    - Export utilities
@@ -73,10 +73,10 @@ This is a sophisticated lottery analysis tool for NC Lucky for Life lottery data
 
 ```bash
 # Run complete analysis with cosmic correlations (RECOMMENDED)
-make full-analysis
+magex analysis:full
 
 # Quick analysis with cosmic pick
-make simple
+magex analysis:simple
 
 # Cosmic correlation analysis only
 go run lottery_analyzer.go cosmic_correlator.go --cosmic
@@ -85,7 +85,7 @@ go run lottery_analyzer.go cosmic_correlator.go --cosmic
 go run lottery_analyzer.go cosmic_correlator.go --statistical
 
 # Export full cosmic analysis
-make export-json
+magex export:json
 ```
 
 ## Development Guidelines
@@ -100,13 +100,13 @@ make export-json
 ### Testing
 ```bash
 # Run all tests including cosmic features
-make test
+magex test
 
 # Run with coverage
-make coverage
+magex docs:coverage
 
 # Run benchmarks
-make benchmark
+magex benchmark
 
 # Test specific cosmic functionality
 go test -run TestAnalyzerSuite/TestCosmicCorrelations -v
@@ -222,7 +222,7 @@ type AnalysisConfig struct {
 ### Debug Commands
 ```bash
 # Test build
-make build
+magex build:dev
 
 # Check for correlation data
 go run lottery_analyzer.go cosmic_correlator.go --cosmic | grep -A 10 "LUNAR"
@@ -302,18 +302,18 @@ It is NOT for:
 
 ```bash
 # Most useful commands
-make full-analysis        # Complete cosmic + statistical analysis
-make simple              # Quick summary with cosmic pick
-make lucky-picks         # Generate multiple strategies
-make export-json         # Save full analysis
-make test               # Run all tests
-make help               # See all commands
+magex analysis:full        # Complete cosmic + statistical analysis
+magex analysis:simple      # Quick summary with cosmic pick
+magex quick:luckypicks     # Generate multiple strategies
+magex export:json          # Save full analysis
+magex test                 # Run all tests
+magex -l                   # See all commands
 
 # Debug and development
-make build              # Build binary
-make coverage           # Test coverage report
-make clean              # Clean generated files
-make cosmic-wisdom      # Fun cosmic quotes
+magex build:dev            # Build binary
+magex docs:coverage        # Test coverage report
+magex clean                # Clean generated files
+magex fun:cosmicwisdom     # Fun cosmic quotes
 ```
 
 **The universe is under no obligation to make you wealthy, but it's happy to teach you about statistics!** 🌟

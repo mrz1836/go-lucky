@@ -10,7 +10,7 @@ Fuzz testing helps discover edge cases and potential security vulnerabilities by
 
 ### Run All Fuzz Tests
 ```bash
-make test-fuzz
+magex test:fuzz
 ```
 
 ### Run Specific Fuzz Test

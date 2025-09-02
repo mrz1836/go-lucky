@@ -36,8 +36,8 @@
         <a href="LICENSE">
           <img src="https://img.shields.io/github/license/mrz1836/go-lucky.svg?style=flat&v=1" alt="License">
         </a><br/>
-        <a href="Makefile">
-          <img src="https://img.shields.io/badge/Makefile-supported-brightgreen?style=flat&logo=probot&logoColor=white" alt="Makefile Supported">
+        <a href="https://github.com/mrz1836/mage-x">
+          <img src="https://img.shields.io/badge/Mage-supported-brightgreen?style=flat&logo=go&logoColor=white" alt="MAGE-X Supported">
         </a>
       </td>
       <td valign="top" align="left">
@@ -77,7 +77,7 @@
 * [Understanding the Output](#-understanding-the-output)
 * [Performance](#-performance)
 * [Testing & Development](#-testing--development)
-* [Make Commands Reference](#-make-commands-reference)
+* [Mage Commands Reference](#-mage-commands-reference)
 * [Mathematical Insights](#-mathematical-insights)
 * [Contributing](#-contributing)
 * [License & Disclaimer](#-license--disclaimer)
@@ -90,7 +90,7 @@ Get up and running with go-lucky in under 3 minutes!
 
 ### Prerequisites
 - [Go 1.21+](https://golang.org/doc/install) installed
-- Historical lottery data file (included: `lucky-numbers-history.csv`)
+- Historical lottery data file (included: `data/lucky-numbers-history.csv`)
 
 ### Installation
 
@@ -100,23 +100,23 @@ git clone https://github.com/mrz1836/go-lucky.git
 cd go-lucky
 
 # Run the complete cosmic analysis (RECOMMENDED)
-make full-analysis
+magex analysis:full
 ```
 
 ### First Analysis
 
 ```bash
 # Quick cosmic lottery analysis with predictions
-make full-analysis
+magex analysis:full
 
 # Simple summary view with hot numbers  
-make simple
+magex analysis:simple
 
 # Generate multiple number recommendation sets
-make lucky-picks
+magex quick:luckypicks
 
 # See all available commands
-make help
+magex -l
 ```
 
 **That's it!** 🎉 go-lucky automatically:
@@ -179,7 +179,7 @@ make help
 The full experience with statistical and cosmic correlation analysis:
 
 ```bash
-make full-analysis
+magex analysis:full
 ```
 
 **Sample Output:**
@@ -222,14 +222,14 @@ Day of Week: Thursday
 For fast insights and number picks:
 
 ```bash
-make simple
+magex analysis:simple
 ```
 
 ### 🔥 Hot Numbers Analysis
 See what's trending recently:
 
 ```bash
-make hot-numbers
+magex quick:hotnumbers
 # Output: Current hot numbers based on recent 50 drawings
 ```
 
@@ -237,7 +237,7 @@ make hot-numbers
 Generate various recommendation strategies:
 
 ```bash
-make lucky-picks
+magex quick:luckypicks
 # Output: 5 different number sets using different strategies
 ```
 
@@ -245,7 +245,7 @@ make lucky-picks
 For mathematics enthusiasts:
 
 ```bash
-make statistical
+magex analysis:statistical
 # Detailed chi-square analysis, p-values, statistical significance testing
 ```
 
@@ -253,7 +253,7 @@ make statistical
 
 ## 📊 Analysis Modes
 
-### 🌟 Full Analysis (`make full-analysis`)
+### 🌟 Full Analysis (`magex analysis:full`)
 **The Complete Experience** - Recommended for first-time users
 - Traditional statistical analysis with frequency tracking
 - Cosmic correlation analysis (moon, solar, weather, planetary)
@@ -452,16 +452,16 @@ go-lucky maintains comprehensive test coverage across all components:
 
 ```bash
 # Run all tests with coverage
-make test
+magex test
 
 # Run with race detector (slower but thorough)
-make test-race
+magex test
 
 # Generate HTML coverage report
-make coverage
+magex docs:coverage
 
 # Run benchmarks
-make benchmark
+magex benchmark
 ```
 
 </details>
@@ -476,14 +476,14 @@ git clone https://github.com/mrz1836/go-lucky.git
 cd go-lucky
 
 # Install dependencies
-make install-deps
+magex deps:tidy
 
 # Run linter and tests
-make lint
-make test
+magex lint
+magex test
 
 # Build the binary
-make build
+magex build:dev
 
 # Run local analysis
 ./bin/lottery-analyzer --simple
@@ -523,7 +523,7 @@ type AnalysisConfig struct {
 To add new statistical analysis or cosmic correlation features:
 
 1. **Statistical Analysis**: Add to `analyzeData()` function
-2. **Cosmic Correlations**: Extend `cosmic_correlator.go`
+2. **Cosmic Correlations**: Extend `cmd/go-lucky/cosmic_correlator.go`
 3. **Output Formatting**: Update report generation functions
 4. **Testing**: Add comprehensive tests including edge cases
 5. **Documentation**: Update README and inline documentation
@@ -542,56 +542,56 @@ func (ce *CorrelationEngine) analyzeNewFactor() {
 
 <br/>
 
-## 🎯 Make Commands Reference
+## 🎯 Mage Commands Reference
 
 ### 📊 Analysis Commands
-| Command              | Description                               | Use Case                  |
-|----------------------|-------------------------------------------|---------------------------|
-| `make full-analysis` | 🌟 Complete cosmic + statistical analysis | **Recommended first run** |
-| `make simple`        | Quick summary with hot numbers            | Daily number checking     |
-| `make statistical`   | Detailed mathematical analysis            | Academic/research use     |
-| `make cosmic`        | Cosmic correlations only                  | Educational demonstration |
-| `make lucky-picks`   | Generate multiple number sets             | Number selection variety  |
-| `make hot-numbers`   | Show current hot numbers                  | Quick trending check      |
-| `make overdue`       | Show most overdue numbers                 | Gap analysis focus        |
+| Command                    | Description                               | Use Case                  |
+|----------------------------|-------------------------------------------|---------------------------|
+| `magex analysis:full`      | 🌟 Complete cosmic + statistical analysis | **Recommended first run** |
+| `magex analysis:simple`    | Quick summary with hot numbers            | Daily number checking     |
+| `magex analysis:statistical` | Detailed mathematical analysis            | Academic/research use     |
+| `magex analysis:cosmic`    | Cosmic correlations only                  | Educational demonstration |
+| `magex quick:luckypicks`   | Generate multiple number sets             | Number selection variety  |
+| `magex quick:hotnumbers`   | Show current hot numbers                  | Quick trending check      |
+| `magex quick:overdue`      | Show most overdue numbers                 | Gap analysis focus        |
 
 ### 📁 Export Commands  
-| Command            | Description                  | Output                           |
-|--------------------|------------------------------|----------------------------------|
-| `make export-json` | Export full analysis to JSON | `lottery_analysis_YYYYMMDD.json` |
-| `make export-csv`  | Export analysis data to CSV  | `lottery_analysis_YYYYMMDD.csv`  |
+| Command             | Description                  | Output                           |
+|---------------------|------------------------------|----------------------------------|
+| `magex export:json` | Export full analysis to JSON | `lottery_analysis_YYYYMMDD.json` |
+| `magex export:csv`  | Export analysis data to CSV  | `lottery_analysis_YYYYMMDD.csv`  |
 
 ### 🛠️ Development Commands
-| Command             | Description                   | When to Use           |
-|---------------------|-------------------------------|-----------------------|
-| `make build`        | Build the analyzer binary     | Local development     |
-| `make test`         | Run all tests                 | Before committing     |
-| `make coverage`     | Generate test coverage report | Coverage verification |
-| `make lint`         | Run code linters              | Code quality check    |
-| `make benchmark`    | Run performance benchmarks    | Performance testing   |
-| `make clean`        | Clean up generated files      | Cleanup workspace     |
-| `make install-deps` | Install/update dependencies   | Initial setup         |
+| Command               | Description                   | When to Use           |
+|-----------------------|-------------------------------|-----------------------|
+| `magex build:dev`     | Build the analyzer binary     | Local development     |
+| `magex test`          | Run all tests                 | Before committing     |
+| `magex docs:coverage` | Generate test coverage report | Coverage verification |
+| `magex lint`          | Run code linters              | Code quality check    |
+| `magex benchmark`     | Run performance benchmarks    | Performance testing   |
+| `magex clean`         | Clean up generated files      | Cleanup workspace     |
+| `magex deps:tidy`     | Install/update dependencies   | Initial setup         |
 
 ### 🎭 Fun Commands
-| Command              | Description                     | Purpose           |
-|----------------------|---------------------------------|-------------------|
-| `make cosmic-wisdom` | Display cosmic lottery wisdom   | Entertainment     |
-| `make fortune`       | Get your cosmic lottery fortune | Daily inspiration |
+| Command                   | Description                     | Purpose           |
+|---------------------------|---------------------------------|-------------------|
+| `magex fun:cosmicwisdom`  | Display cosmic lottery wisdom   | Entertainment     |
+| `magex fun:fortune`       | Get your cosmic lottery fortune | Daily inspiration |
 
 ### ⚡ Quick Command Combinations
 
 ```bash
 # Development workflow
-make lint && make test && make build
+magex lint && magex test && magex build:dev
 
 # Analysis workflow  
-make full-analysis && make export-json
+magex analysis:full && magex export:json
 
 # Performance testing
-make clean && time make full-analysis
+magex clean && time magex analysis:full
 
 # Coverage verification
-make test && make coverage
+magex test && magex docs:coverage
 ```
 
 <br/>
@@ -697,7 +697,7 @@ We welcome contributions that enhance the educational and analytical value of go
 ```bash
 # Development workflow
 git checkout -b feature/amazing-analysis
-make lint && make test  # Ensure quality
+magex lint && magex test  # Ensure quality
 git commit -m 'feat: add amazing statistical analysis'
 git push origin feature/amazing-analysis
 # Open a Pull Request
@@ -737,16 +737,16 @@ git push origin feature/amazing-analysis
 
 ```bash
 # Run the full test suite
-make test
+magex test
 
 # Check test coverage
-make coverage
+magex docs:coverage
 
 # Verify code quality  
-make lint
+magex lint
 
 # Test performance impact
-make benchmark
+magex benchmark
 ```
 
 <br/>
