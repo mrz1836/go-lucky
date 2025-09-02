@@ -1694,13 +1694,13 @@ func TestAnalyzerSuite(t *testing.T) {
 func BenchmarkAnalyzerCreation(b *testing.B) {
 	ctx := context.Background()
 	for i := 0; i < b.N; i++ {
-		_, _ = NewAnalyzer(ctx, "lucky-numbers-history.csv", nil) // ignore error in benchmark
+		_, _ = NewAnalyzer(ctx, "../../data/lucky-numbers-history.csv", nil) // ignore error in benchmark
 	}
 }
 
 func BenchmarkRecommendationGeneration(b *testing.B) {
 	ctx := context.Background()
-	analyzer, err := NewAnalyzer(ctx, "lucky-numbers-history.csv", nil)
+	analyzer, err := NewAnalyzer(ctx, "../../data/lucky-numbers-history.csv", nil)
 	if err != nil {
 		b.Skip("Skipping benchmark: CSV file not available")
 	}
@@ -1716,7 +1716,7 @@ func BenchmarkRecommendationGeneration(b *testing.B) {
 
 func BenchmarkPatternAnalysis(b *testing.B) {
 	ctx := context.Background()
-	analyzer, err := NewAnalyzer(ctx, "lucky-numbers-history.csv", nil)
+	analyzer, err := NewAnalyzer(ctx, "../../data/lucky-numbers-history.csv", nil)
 	if err != nil {
 		b.Skip("Skipping benchmark: CSV file not available")
 	}
@@ -1735,13 +1735,13 @@ func BenchmarkPatternAnalysis(b *testing.B) {
 func BenchmarkDataLoading(b *testing.B) {
 	ctx := context.Background()
 	for i := 0; i < b.N; i++ {
-		_, _ = NewAnalyzer(ctx, "lucky-numbers-history.csv", nil)
+		_, _ = NewAnalyzer(ctx, "../../data/lucky-numbers-history.csv", nil)
 	}
 }
 
 func BenchmarkCosmicCorrelations(b *testing.B) {
 	ctx := context.Background()
-	analyzer, err := NewAnalyzer(ctx, "lucky-numbers-history.csv", nil)
+	analyzer, err := NewAnalyzer(ctx, "../../data/lucky-numbers-history.csv", nil)
 	if err != nil {
 		b.Skip("Skipping benchmark: CSV file not available")
 	}
@@ -1760,7 +1760,7 @@ func BenchmarkCosmicCorrelations(b *testing.B) {
 
 func BenchmarkReportGeneration(b *testing.B) {
 	ctx := context.Background()
-	analyzer, err := NewAnalyzer(ctx, "lucky-numbers-history.csv", nil)
+	analyzer, err := NewAnalyzer(ctx, "../../data/lucky-numbers-history.csv", nil)
 	if err != nil {
 		b.Skip("Skipping benchmark: CSV file not available")
 	}

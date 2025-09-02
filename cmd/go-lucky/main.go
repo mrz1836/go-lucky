@@ -62,7 +62,7 @@ func main() {
 	}
 
 	// Create analyzer
-	analyzer, err := NewAnalyzer(ctx, "lucky-numbers-history.csv", config)
+	analyzer, err := NewAnalyzer(ctx, "../../data/lucky-numbers-history.csv", config)
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
