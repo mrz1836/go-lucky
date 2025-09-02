@@ -71,6 +71,42 @@ jobs:
           runner-os: ${{ inputs.primary-runner }}
 
       # ————————————————————————————————————————————————————————————————
+      # Validate MAGE-X version matches requested version
+      # ————————————————————————————————————————————————————————————————
+      - name: 🔍 Validate MAGE-X Version
+        id: validate-version
+        run: |
+          echo "🔍 Validating MAGE-X version..."
+
+          # Get the actual version from the binary
+          ACTUAL_VERSION=$(magex --version 2>/dev/null | grep -E '^\s+Version:' | awk '{print $2}' || echo "unknown")
+          REQUESTED_VERSION="${{ env.MAGE_X_VERSION }}"
+
+          echo "📋 Requested version: $REQUESTED_VERSION"
+          echo "📋 Actual version: $ACTUAL_VERSION"
+
+          # Strip 'v' prefix from both versions for comparison
+          REQUESTED_CLEAN=$(echo "$REQUESTED_VERSION" | sed 's/^v//')
+          ACTUAL_CLEAN=$(echo "$ACTUAL_VERSION" | sed 's/^v//')
+
+          if [[ "$ACTUAL_VERSION" == "unknown" ]]; then
+            echo "❌ Failed: Could not determine magex version from binary"
+            echo "❌ This indicates a problem with version detection or binary corruption"
+            echo "validation-result=failed" >> $GITHUB_OUTPUT
+            exit 1
+          elif [[ "$ACTUAL_CLEAN" == "$REQUESTED_CLEAN" ]]; then
+            echo "✅ Version validation passed: $ACTUAL_VERSION matches $REQUESTED_VERSION"
+            echo "validation-result=success" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Version mismatch detected!"
+            echo "❌ Requested: $REQUESTED_VERSION (clean: $REQUESTED_CLEAN)"
+            echo "❌ Actual: $ACTUAL_VERSION (clean: $ACTUAL_CLEAN)"
+            echo "❌ This indicates a cache corruption or installation failure"
+            echo "validation-result=failed" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+      # ————————————————————————————————————————————————————————————————
       # Verify MAGE-X installation and required commands
       # ————————————————————————————————————————————————————————————————
       - name: ✅ Verify magex help and required commands
@@ -148,11 +184,16 @@ jobs:
       # ————————————————————————————————————————————————————————————————
       - name: 📊 Job Summary
         run: |
+          # Get magex version
+          MAGEX_VERSION=$(magex --version 2>/dev/null | grep -E '^\s+Version:' | awk '{print $2}' || echo "unknown")
+
           echo "## 🪄 MAGE-X Verification Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| 🔧 Verification Details | ✅ Status |" >> $GITHUB_STEP_SUMMARY
           echo "|---|---|" >> $GITHUB_STEP_SUMMARY
           echo "| **Test** | magex help command |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Version** | $MAGEX_VERSION |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Version Validation** | ${{ steps.validate-version.outputs.validation-result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| **Installation** | ${{ steps.setup-magex.outputs.installation-method == 'cached' && '💾 From cache' || '📥 Fresh install' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| **Purpose** | Verify MAGE-X installation and standard commands |" >> $GITHUB_STEP_SUMMARY
           echo "| **Matched Commands** | ${{ steps.verify-magex.outputs.matched }} |" >> $GITHUB_STEP_SUMMARY

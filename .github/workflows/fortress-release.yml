@@ -364,13 +364,14 @@ jobs:
           job-name: release
           os: ${{ inputs.primary-runner }}
           go-version: ${{ inputs.go-primary-version }}
+          cache-prefix: cache-stats
           gomod-cache-hit: ${{ steps.setup-go-release.outputs.module-cache-hit }}
           gobuild-cache-hit: ${{ steps.setup-go-release.outputs.build-cache-hit }}
 
       # ————————————————————————————————————————————————————————————————
-      # Upload cache statistics
+      # Upload infrastructure cache statistics
       # ————————————————————————————————————————————————————————————————
-      - name: 📤 Upload cache statistics
+      - name: 📤 Upload infrastructure cache statistics
         if: always()
         uses: ./.github/actions/upload-statistics
         with:

@@ -89,7 +89,6 @@ jobs:
     runs-on: ${{ inputs.primary-runner }}
     if: always()
     outputs:
-      artifacts-bundle: "report-artifacts-bundle"
       timing-data: ${{ steps.calculate-timing.outputs.timing-json }}
     steps:
       # ————————————————————————————————————————————————————————————————
@@ -109,61 +108,6 @@ jobs:
           echo "$ENV_JSON" | jq -r 'to_entries | .[] | "\(.key)=\(.value)"' | while IFS='=' read -r key value; do
             echo "$key=$value" >> $GITHUB_ENV
           done
-
-      # ————————————————————————————————————————————————————————————————
-      # Download all statistics artifacts
-      # ————————————————————————————————————————————————————————————————
-      - name: 📥 Download performance artifacts
-        if: always()
-        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
-        with:
-          pattern: "*-stats-*"
-          path: ./performance-artifacts/
-
-      - name: 📥 Download test result artifacts for failure analysis
-        if: always()
-        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
-        continue-on-error: true
-        with:
-          pattern: "test-results-*"
-          path: ./test-artifacts/
-
-      # ————————————————————————————————————————————————————————————————
-      # Flatten performance artifacts for processing
-      # ————————————————————————————————————————————————————————————————
-      - name: 🗂️ Flatten performance and test artifacts
-        if: always()
-        run: |
-          echo "🗂️ Flattening downloaded artifacts..."
-
-          # Find all JSON files in subdirectories and move them to current directory
-          if [ -d "./performance-artifacts/" ]; then
-            find ./performance-artifacts/ -name "*.json" -type f | while read -r file; do
-              filename=$(basename "$file")
-              echo "Moving $file to ./$filename"
-              cp "$file" "./$filename"
-            done
-
-            # List all flattened files for debugging
-            echo "📋 Available stats files:"
-            ls -la *-stats-*.json 2>/dev/null || echo "No stats files found"
-          else
-            echo "⚠️ No performance-artifacts directory found"
-          fi
-
-          # Process test artifacts for additional failure details
-          if [ -d "./test-artifacts/" ]; then
-            find ./test-artifacts/ -name "*.json" -type f | while read -r file; do
-              filename=$(basename "$file")
-              echo "Moving test artifact $file to ./$filename"
-              cp "$file" "./$filename"
-            done
-
-            echo "📋 Available test artifact files:"
-            ls -la test-failures*.json 2>/dev/null || echo "No test failure files found"
-          else
-            echo "⚠️ No test-artifacts directory found"
-          fi
 
       # ————————————————————————————————————————————————————————————————
       # Calculate timing metrics
@@ -186,17 +130,6 @@ jobs:
           # Create JSON for sub-workflows
           echo "timing-json={\"total_minutes\":$TOTAL_MINUTES,\"total_seconds\":$TOTAL_SECONDS,\"total_duration\":$TOTAL_DURATION}" >> $GITHUB_OUTPUT
 
-      # ————————————————————————————————————————————————————————————————
-      # Upload artifacts bundle for sub-workflows
-      # ————————————————————————————————————————————————————————————————
-      - name: 📦 Upload Artifacts Bundle
-        id: upload-bundle
-        uses: ./.github/actions/upload-statistics
-        with:
-          artifact-name: "report-artifacts-bundle"
-          artifact-path: "*.json"
-          retention-days: "1"
-
   # ----------------------------------------------------------------------------------
   # Process Statistics (Cache, Benchmarks, Coverage, LOC)
   # ----------------------------------------------------------------------------------
@@ -206,7 +139,6 @@ jobs:
     if: always()
     uses: ./.github/workflows/fortress-completion-statistics.yml
     with:
-      artifacts-data: ${{ needs.initialize-report.outputs.artifacts-bundle }}
       timing-metrics: ${{ needs.initialize-report.outputs.timing-data }}
       env-json: ${{ inputs.env-json }}
 
@@ -219,7 +151,6 @@ jobs:
     if: always()
     uses: ./.github/workflows/fortress-completion-tests.yml
     with:
-      artifacts-data: ${{ needs.initialize-report.outputs.artifacts-bundle }}
       test-suite-result: ${{ inputs.test-suite-result }}
       env-json: ${{ inputs.env-json }}
 

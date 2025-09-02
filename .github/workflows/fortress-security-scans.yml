@@ -136,16 +136,17 @@ jobs:
           job-name: nancy-security
           os: ${{ inputs.primary-runner }}
           go-version: ${{ inputs.go-primary-version }}
+          cache-prefix: cache-stats
           gomod-cache-hit: ${{ steps.setup-ask-nancy.outputs.module-cache-hit }}
           gobuild-cache-hit: ${{ steps.setup-ask-nancy.outputs.build-cache-hit }}
 
       # ————————————————————————————————————————————————————————————————
-      # Upload statistics
+      # Upload infrastructure cache statistics
       # ————————————————————————————————————————————————————————————————
-      - name: 📤 Upload cache statistics
+      - name: 📤 Upload infrastructure cache statistics
         uses: ./.github/actions/upload-statistics
         with:
-          artifact-name: cache-stats-nancy-security
+          artifact-name: cache-stats-security-nancy
           artifact-path: cache-stats-nancy-security.json
 
   # ----------------------------------------------------------------------------------
@@ -267,16 +268,17 @@ jobs:
           job-name: govulncheck-security
           os: ${{ inputs.primary-runner }}
           go-version: ${{ inputs.go-primary-version }}
+          cache-prefix: cache-stats
           gomod-cache-hit: ${{ steps.setup-govulncheck.outputs.module-cache-hit }}
           gobuild-cache-hit: ${{ steps.setup-govulncheck.outputs.build-cache-hit }}
 
       # ————————————————————————————————————————————————————————————————
-      # Upload statistics
+      # Upload infrastructure cache statistics
       # ————————————————————————————————————————————————————————————————
-      - name: 📤 Upload cache statistics
+      - name: 📤 Upload infrastructure cache statistics
         uses: ./.github/actions/upload-statistics
         with:
-          artifact-name: cache-stats-govulncheck-security
+          artifact-name: cache-stats-security-govulncheck
           artifact-path: cache-stats-govulncheck-security.json
 
   # ----------------------------------------------------------------------------------

@@ -84,19 +84,27 @@ jobs:
       # ————————————————————————————————————————————————————————————————
       - name: 📥 Download statistics section
         if: always()
-        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
-        continue-on-error: true
+        uses: ./.github/actions/download-artifact-resilient
         with:
-          name: "statistics-section"
+          pattern: "statistics-section"
           path: ./sections/
+          merge-multiple: false
+          max-retries: ${{ env.ARTIFACT_DOWNLOAD_RETRIES }}
+          retry-delay: ${{ env.ARTIFACT_DOWNLOAD_RETRY_DELAY }}
+          timeout: ${{ env.ARTIFACT_DOWNLOAD_TIMEOUT }}
+          continue-on-error: ${{ env.ARTIFACT_DOWNLOAD_CONTINUE_ON_ERROR }}
 
       - name: 📥 Download tests section
         if: always()
-        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
-        continue-on-error: true
+        uses: ./.github/actions/download-artifact-resilient
         with:
-          name: "tests-section"
+          pattern: "tests-section"
           path: ./sections/
+          merge-multiple: false
+          max-retries: ${{ env.ARTIFACT_DOWNLOAD_RETRIES }}
+          retry-delay: ${{ env.ARTIFACT_DOWNLOAD_RETRY_DELAY }}
+          timeout: ${{ env.ARTIFACT_DOWNLOAD_TIMEOUT }}
+          continue-on-error: ${{ env.ARTIFACT_DOWNLOAD_CONTINUE_ON_ERROR }}
 
       # ————————————————————————————————————————————————————————————————
       # Initialize final report with header

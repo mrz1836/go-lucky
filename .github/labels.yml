@@ -13,6 +13,9 @@
 - name: "chore"
   description: "Simple dependency updates or version bumps"
   color: 006b75
+- name: "coverage-override"
+  description: "Override coverage requirements for this PR"
+  color: ff8c00
 - name: "dependencies"
   description: "Dependency updates, version bumps, etc."
   color: 006b75

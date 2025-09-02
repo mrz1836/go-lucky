@@ -19,10 +19,6 @@ name: GoFortress (Completion Tests)
 on:
   workflow_call:
     inputs:
-      artifacts-data:
-        description: "JSON string of artifact metadata"
-        required: true
-        type: string
       test-suite-result:
         description: "Result of the test suite job"
         required: true
@@ -78,22 +74,67 @@ jobs:
           done
 
       # ————————————————————————————————————————————————————————————————
-      # Download artifacts from main workflow
+      # Download specific artifacts needed for test analysis
       # ————————————————————————————————————————————————————————————————
-      - name: 📥 Download artifacts
+      - name: 📥 Download test statistics
         if: always()
-        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+        uses: ./.github/actions/download-artifact-resilient
         with:
-          pattern: "*-stats-*"
+          pattern: "test-stats-*"
           path: ./artifacts/
+          merge-multiple: true
+          max-retries: ${{ env.ARTIFACT_DOWNLOAD_RETRIES }}
+          retry-delay: ${{ env.ARTIFACT_DOWNLOAD_RETRY_DELAY }}
+          timeout: ${{ env.ARTIFACT_DOWNLOAD_TIMEOUT }}
+          continue-on-error: ${{ env.ARTIFACT_DOWNLOAD_CONTINUE_ON_ERROR }}
+
+      - name: 📥 Download benchmark statistics
+        if: always()
+        uses: ./.github/actions/download-artifact-resilient
+        with:
+          pattern: "bench-stats-*"
+          path: ./artifacts/
+          merge-multiple: true
+          max-retries: ${{ env.ARTIFACT_DOWNLOAD_RETRIES }}
+          retry-delay: ${{ env.ARTIFACT_DOWNLOAD_RETRY_DELAY }}
+          timeout: ${{ env.ARTIFACT_DOWNLOAD_TIMEOUT }}
+          continue-on-error: ${{ env.ARTIFACT_DOWNLOAD_CONTINUE_ON_ERROR }}
+
+      - name: 📥 Download cache statistics
+        if: always()
+        uses: ./.github/actions/download-artifact-resilient
+        with:
+          pattern: "cache-stats-*"
+          path: ./artifacts/
+          merge-multiple: true
+          max-retries: ${{ env.ARTIFACT_DOWNLOAD_RETRIES }}
+          retry-delay: ${{ env.ARTIFACT_DOWNLOAD_RETRY_DELAY }}
+          timeout: ${{ env.ARTIFACT_DOWNLOAD_TIMEOUT }}
+          continue-on-error: ${{ env.ARTIFACT_DOWNLOAD_CONTINUE_ON_ERROR }}
 
       - name: 📥 Download test failure artifacts
         if: always()
-        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
-        continue-on-error: true
+        uses: ./.github/actions/download-artifact-resilient
         with:
-          pattern: "test-results-*"
+          pattern: "test-results-unit-*"
           path: ./test-artifacts/
+          merge-multiple: true
+          max-retries: ${{ env.ARTIFACT_DOWNLOAD_RETRIES }}
+          retry-delay: ${{ env.ARTIFACT_DOWNLOAD_RETRY_DELAY }}
+          timeout: ${{ env.ARTIFACT_DOWNLOAD_TIMEOUT }}
+          continue-on-error: ${{ env.ARTIFACT_DOWNLOAD_CONTINUE_ON_ERROR }}
+
+      - name: 📥 Download fuzz test failure artifacts
+        if: always()
+        uses: ./.github/actions/download-artifact-resilient
+        with:
+          pattern: "test-results-fuzz-*"
+          path: ./test-artifacts/
+          merge-multiple: true
+          max-retries: ${{ env.ARTIFACT_DOWNLOAD_RETRIES }}
+          retry-delay: ${{ env.ARTIFACT_DOWNLOAD_RETRY_DELAY }}
+          timeout: ${{ env.ARTIFACT_DOWNLOAD_TIMEOUT }}
+          continue-on-error: ${{ env.ARTIFACT_DOWNLOAD_CONTINUE_ON_ERROR }}
 
       - name: 🗂️ Flatten artifacts
         if: always()
@@ -120,8 +161,8 @@ jobs:
               echo "Moving test artifact $file to ./$filename"
               cp "$file" "./$filename"
             done
-            echo "📋 Available test artifact files:"
-            ls -la test-failures*.json 2>/dev/null || echo "No test failure files found"
+            echo "📋 Available test artifacts:"
+            ls -la test-failures*.json test-results*.json 2>/dev/null || echo "No test artifacts found"
           else
             echo "⚠️ No test-artifacts directory found"
           fi
@@ -447,11 +488,26 @@ jobs:
       # ————————————————————————————————————————————————————————————————
       - name: 📤 Upload Test Analysis Section
         id: upload-section
+        if: always()
+        run: |
+          if [ -f "tests-section.md" ] && [ -s "tests-section.md" ]; then
+            echo "🧪 Test section found, uploading..."
+            ls -la tests-section.md
+            echo "📋 Content preview:"
+            head -5 tests-section.md
+          else
+            echo "⚠️ Test section file missing or empty, creating minimal section..."
+            echo "### 🧪 Test Results Section" > tests-section.md
+            echo "No test data available for this run." >> tests-section.md
+          fi
+
+      - name: 📤 Upload Test Artifact
         uses: ./.github/actions/upload-statistics
         with:
           artifact-name: "tests-section"
           artifact-path: "tests-section.md"
           retention-days: "1"
+          if-no-files-found: "warn"
 
       - name: 📋 Set Output Content
         id: set-output

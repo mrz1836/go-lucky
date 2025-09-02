@@ -507,16 +507,20 @@ jobs:
             if [[ "${{ env.GO_COVERAGE_PROVIDER }}" == "codecov" ]]; then
               echo "| **Coverage System** | \`Codecov\` | External coverage service |" >> $GITHUB_STEP_SUMMARY
               echo "| **Token Required** | $([ "${{ env.CODECOV_TOKEN_REQUIRED }}" == "true" ] && echo "✅ Yes" || echo "❌ No") | CODECOV_TOKEN secret requirement |" >> $GITHUB_STEP_SUMMARY
+              echo "| **Coverage Threshold** | \`${{ env.GO_COVERAGE_THRESHOLD }}%\` | Minimum acceptable coverage |" >> $GITHUB_STEP_SUMMARY
+
+              # Always show codecov config location when using codecov provider
+              echo "| **Codecov Config Location** | $([ -f "codecov.yml" ] && echo "\`codecov.yml\`" || ([ -f ".codecov.yml" ] && echo "\`.codecov.yml\`" || echo "❌ Not Found")) | Codecov configuration file in repository root |" >> $GITHUB_STEP_SUMMARY
             else
-              echo "| **Coverage System** | \`Internal GoFortress\` | Self-hosted coverage tracking with GitHub Pages |" >> $GITHUB_STEP_SUMMARY
+              echo "| **Coverage System** | \`Internal go-coverage\` | Self-hosted coverage tracking with GitHub Pages |" >> $GITHUB_STEP_SUMMARY
+              echo "| **Coverage Threshold** | \`${{ env.GO_COVERAGE_THRESHOLD }}%\` | Minimum acceptable coverage |" >> $GITHUB_STEP_SUMMARY
+              echo "| **Badge Style** | \`${{ env.GO_COVERAGE_BADGE_STYLE }}\` | Coverage badge appearance |" >> $GITHUB_STEP_SUMMARY
+              echo "| **Badge Logo** | \`${{ env.GO_COVERAGE_BADGE_LOGO }}\` | Badge logo/icon |" >> $GITHUB_STEP_SUMMARY
+              echo "| **Report Theme** | \`${{ env.GO_COVERAGE_REPORT_THEME }}\` | HTML report styling |" >> $GITHUB_STEP_SUMMARY
+              echo "| **PR Comments** | $([ "${{ env.GO_COVERAGE_POST_COMMENTS }}" == "true" ] && echo "✅ Enabled" || echo "❌ Disabled") | Coverage comments on pull requests |" >> $GITHUB_STEP_SUMMARY
+              echo "| **History Retention** | \`${{ env.GO_COVERAGE_HISTORY_RETENTION }}\` days | Coverage data retention period |" >> $GITHUB_STEP_SUMMARY
+              echo "| **Exclude Paths** | \`${{ env.GO_COVERAGE_EXCLUDE_PATHS }}\` | Paths excluded from coverage |" >> $GITHUB_STEP_SUMMARY
             fi
-            echo "| **Coverage Threshold** | \`${{ env.GO_COVERAGE_THRESHOLD }}%\` | Minimum acceptable coverage |" >> $GITHUB_STEP_SUMMARY
-            echo "| **Badge Style** | \`${{ env.GO_COVERAGE_BADGE_STYLE }}\` | Coverage badge appearance |" >> $GITHUB_STEP_SUMMARY
-            echo "| **Badge Logo** | \`${{ env.GO_COVERAGE_BADGE_LOGO }}\` | Badge logo/icon |" >> $GITHUB_STEP_SUMMARY
-            echo "| **Report Theme** | \`${{ env.GO_COVERAGE_REPORT_THEME }}\` | HTML report styling |" >> $GITHUB_STEP_SUMMARY
-            echo "| **PR Comments** | $([ "${{ env.GO_COVERAGE_POST_COMMENTS }}" == "true" ] && echo "✅ Enabled" || echo "❌ Disabled") | Coverage comments on pull requests |" >> $GITHUB_STEP_SUMMARY
-            echo "| **History Retention** | \`${{ env.GO_COVERAGE_HISTORY_RETENTION }}\` days | Coverage data retention period |" >> $GITHUB_STEP_SUMMARY
-            echo "| **Exclude Paths** | \`${{ env.GO_COVERAGE_EXCLUDE_PATHS }}\` | Paths excluded from coverage |" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "<br><br>" >> $GITHUB_STEP_SUMMARY
           fi

@@ -6,12 +6,11 @@ version: 2
 
 before:
   hooks:
-    - magex test
+    - sh -c 'if [ "$SKIP_GORELEASER_TESTS" = "true" ]; then echo "Skipping tests (SKIP_GORELEASER_TESTS=true)"; else magex test; fi'
 changelog:
   sort: asc
   filters:
     exclude:
-      - "^.github:"
       - "^.vscode:"
       - "^test:"
 
@@ -19,13 +18,44 @@ changelog:
 # Builder
 # ---------------------------
 builds:
-  - env:
+  - id: go-lucky
+    main: ./cmd/go-lucky
+    binary: go-lucky
+    env:
       - CGO_ENABLED=0
     goos:
       - linux
-      - windows
       - darwin
-    skip: true
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commit={{.Commit}}
+      - -X main.buildDate={{.Date}}
+
+# ---------------------------
+# Archives
+# ---------------------------
+archives:
+  - id: go-lucky
+    name_template: >-
+      {{- .ProjectName }}_
+      {{- .Version }}_
+      {{- .Os }}_
+      {{- .Arch }}
+    files:
+      - LICENSE
+      - README.md
+
+# ---------------------------
+# Checksum
+# ---------------------------
+checksum:
+  name_template: "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
+  algorithm: sha256
 
 # ---------------------------
 # Github Release

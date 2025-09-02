@@ -64,30 +64,66 @@ jobs:
           env-json: ${{ inputs.env-json }}
 
       # ————————————————————————————————————————————————————————————————
-      # Download all test result artifacts (including failure details)
+      # Download unit test result artifacts with resilience
       # ————————————————————————————————————————————————————————————————
-      - name: 📥 Download test results and statistics
-        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+      - name: 📥 Download unit test results (with retry)
+        uses: ./.github/actions/download-artifact-resilient
         with:
-          pattern: "test-results-*"
+          pattern: "test-results-unit-*"
           path: test-results/
           merge-multiple: true
+          max-retries: ${{ env.ARTIFACT_DOWNLOAD_RETRIES }}
+          retry-delay: ${{ env.ARTIFACT_DOWNLOAD_RETRY_DELAY }}
+          timeout: ${{ env.ARTIFACT_DOWNLOAD_TIMEOUT }}
+          continue-on-error: ${{ env.ARTIFACT_DOWNLOAD_CONTINUE_ON_ERROR }}
 
-      - name: 📥 Download test statistics
-        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+      - name: 📥 Download test statistics (with retry)
+        uses: ./.github/actions/download-artifact-resilient
         with:
-          pattern: "*-stats-*"
+          pattern: "test-stats-*"
           path: test-results/
           merge-multiple: true
+          max-retries: ${{ env.ARTIFACT_DOWNLOAD_RETRIES }}
+          retry-delay: ${{ env.ARTIFACT_DOWNLOAD_RETRY_DELAY }}
+          timeout: ${{ env.ARTIFACT_DOWNLOAD_TIMEOUT }}
+          continue-on-error: ${{ env.ARTIFACT_DOWNLOAD_CONTINUE_ON_ERROR }}
 
-      - name: 📥 Download fuzz results (if enabled)
+      - name: 📥 Download fuzz results (if enabled, with retry)
         if: inputs.fuzz-testing-enabled == 'true'
-        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
-        continue-on-error: true
+        uses: ./.github/actions/download-artifact-resilient
         with:
-          pattern: "fuzz-results-*"
+          pattern: "test-results-fuzz-*"
           path: test-results/
           merge-multiple: true
+          max-retries: ${{ env.ARTIFACT_DOWNLOAD_RETRIES }}
+          retry-delay: ${{ env.ARTIFACT_DOWNLOAD_RETRY_DELAY }}
+          timeout: ${{ env.ARTIFACT_DOWNLOAD_TIMEOUT }}
+          continue-on-error: ${{ env.ARTIFACT_DOWNLOAD_CONTINUE_ON_ERROR }}
+
+      # ————————————————————————————————————————————————————————————————
+      # Flatten downloaded artifacts to expected directory structure
+      # ————————————————————————————————————————————————————————————————
+      - name: 🗂️ Flatten downloaded artifacts
+        if: always()
+        run: |
+          echo "🗂️ Flattening downloaded artifacts..."
+
+          # Process test statistics (move from subdirectories to test-results/)
+          if [ -d "test-results/" ]; then
+            echo "📋 Directory structure before flattening:"
+            find test-results/ -name "*.json" -type f | head -10 | sed 's/^/  • /' || echo "  No JSON files found"
+
+            find test-results/ -name "*.json" -type f | while read -r file; do
+              filename=$(basename "$file")
+              echo "Moving $file to test-results/$filename"
+              cp "$file" "test-results/$filename"
+            done
+
+            echo "📋 Available statistics files after flattening:"
+            ls -la test-results/*-stats-*.json 2>/dev/null || echo "  No statistics files found"
+          else
+            echo "⚠️ No test-results directory found"
+          fi
 
       # ————————————————————————————————————————————————————————————————
       # Enhanced test results validation with failure details
@@ -346,8 +382,34 @@ jobs:
             fi
           fi
 
+          # Calculate total test counts across all suites
+          TOTAL_REGULAR_TESTS=0
+          TOTAL_FUZZ_TESTS=0
+
+          # Aggregate regular test counts
+          if [[ $TEST_SUITE_COUNT -gt 0 ]]; then
+            for stats_file in test-results/test-stats-*.json; do
+              if [[ -f "$stats_file" ]]; then
+                TEST_COUNT=$(jq -r '.test_count // 0' "$stats_file")
+                TOTAL_REGULAR_TESTS=$((TOTAL_REGULAR_TESTS + TEST_COUNT))
+              fi
+            done
+          fi
+
+          # Aggregate fuzz test counts
+          if [[ $FUZZ_SUITE_COUNT -gt 0 ]]; then
+            for stats_file in test-results/fuzz-stats-*.json; do
+              if [[ -f "$stats_file" ]]; then
+                FUZZ_COUNT=$(jq -r '.fuzz_test_count // 0' "$stats_file")
+                TOTAL_FUZZ_TESTS=$((TOTAL_FUZZ_TESTS + FUZZ_COUNT))
+              fi
+            done
+          fi
+
           echo "- **Test Matrix Jobs**: $TEST_SUITE_COUNT" >> $GITHUB_STEP_SUMMARY
+          echo "- **Total Tests**: $TOTAL_REGULAR_TESTS" >> $GITHUB_STEP_SUMMARY
           echo "- **Fuzz Test Jobs**: $FUZZ_SUITE_COUNT" >> $GITHUB_STEP_SUMMARY
+          echo "- **Total Fuzz Tests**: $TOTAL_FUZZ_TESTS" >> $GITHUB_STEP_SUMMARY
           echo "- **Validation Status**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
 
