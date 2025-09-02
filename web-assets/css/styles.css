@@ -14,13 +14,13 @@
     --success: #10b981;
     --warning: #f59e0b;
     --error: #ef4444;
-    
+
     /* Cosmic Colors */
     --cosmic-purple: #7c3aed;
     --cosmic-blue: #2563eb;
     --cosmic-cyan: #06b6d4;
     --cosmic-pink: #ec4899;
-    
+
     /* Neutrals */
     --gray-50: #f9fafb;
     --gray-100: #f3f4f6;
@@ -32,19 +32,19 @@
     --gray-700: #374151;
     --gray-800: #1f2937;
     --gray-900: #111827;
-    
+
     /* Background */
     --bg-primary: #0f0f23;
     --bg-secondary: #1a1a3e;
     --bg-tertiary: #252547;
     --bg-card: rgba(255, 255, 255, 0.05);
     --bg-card-hover: rgba(255, 255, 255, 0.08);
-    
+
     /* Text */
     --text-primary: #ffffff;
     --text-secondary: #a1a1aa;
     --text-muted: #71717a;
-    
+
     /* Spacing */
     --space-xs: 0.25rem;
     --space-sm: 0.5rem;
@@ -53,23 +53,23 @@
     --space-xl: 2rem;
     --space-2xl: 3rem;
     --space-3xl: 4rem;
-    
+
     /* Typography */
     --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
-    
+
     /* Borders */
     --border-radius: 0.5rem;
     --border-radius-lg: 1rem;
     --border-radius-xl: 1.5rem;
-    
+
     /* Shadows */
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
     --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.3);
-    
+
     /* Animations */
     --transition-fast: 0.15s ease;
     --transition-normal: 0.3s ease;
@@ -122,7 +122,7 @@ body {
     position: absolute;
     width: 100%;
     height: 100%;
-    background-image: 
+    background-image:
         linear-gradient(rgba(99, 102, 241, 0.1) 1px, transparent 1px),
         linear-gradient(90deg, rgba(99, 102, 241, 0.1) 1px, transparent 1px);
     background-size: 50px 50px;
@@ -1039,72 +1039,72 @@ body {
     .container {
         padding: 0 var(--space-md);
     }
-    
+
     .demo {
         padding: var(--space-2xl) 0;
     }
-    
+
     .demo-grid {
         gap: var(--space-lg);
         margin: 0 var(--space-sm);
     }
-    
+
     .demo-card {
         margin: 0;
         padding: var(--space-lg);
     }
-    
+
     .features-grid,
     .demo-grid {
         grid-template-columns: 1fr;
         grid-template-rows: auto;
         max-width: none;
     }
-    
+
     .feature-card,
     .demo-card {
         min-height: auto;
         text-align: center;
     }
-    
+
     .feature-icon {
         margin: 0 auto var(--space-lg);
     }
-    
+
     .feature-content {
         align-items: center;
     }
-    
+
     .feature-metrics {
         justify-content: center;
         gap: var(--space-xl);
     }
-    
+
     .hero-stats {
         gap: var(--space-lg);
     }
-    
+
     .hero-title {
         font-size: clamp(2rem, 8vw, 3rem);
         line-height: 1.2;
     }
-    
+
     .hero-description {
         font-size: 1.125rem;
         padding: 0 var(--space-sm);
     }
-    
+
     .hero-badge {
         margin-bottom: var(--space-lg);
         padding: var(--space-sm) var(--space-lg);
     }
-    
+
     .hero-actions {
         flex-direction: column;
         align-items: center;
         gap: var(--space-md);
     }
-    
+
     .btn {
         width: 100%;
         max-width: 280px;
@@ -1112,7 +1112,7 @@ body {
         padding: var(--space-lg) var(--space-xl);
         font-size: 1.125rem;
     }
-    
+
     .demo-header {
         flex-direction: column;
         align-items: flex-start;
@@ -1141,37 +1141,37 @@ body {
     .current-day {
         text-align: center;
     }
-    
+
     .demo-card {
         padding: var(--space-lg);
     }
-    
+
     .disclaimer-content {
         flex-direction: column;
         text-align: center;
         gap: var(--space-lg);
     }
-    
+
     .disclaimer-icon {
         margin: 0 auto;
     }
-    
+
     .footer-content {
         grid-template-columns: 1fr;
         text-align: center;
         gap: var(--space-xl);
     }
-    
+
     .footer-links {
         justify-content: center;
         gap: var(--space-xl);
     }
-    
+
     .number-set {
         flex-direction: column;
         gap: var(--space-md);
     }
-    
+
     .main-numbers {
         gap: var(--space-xs);
         flex-wrap: nowrap;
@@ -1181,7 +1181,7 @@ body {
         max-width: 280px;
         margin: 0 auto;
     }
-    
+
     .number {
         width: 36px;
         height: 36px;
@@ -1189,14 +1189,14 @@ body {
         flex-shrink: 0;
         min-width: 36px;
     }
-    
+
     .lucky-ball .lucky {
         width: 40px;
         height: 40px;
         font-size: 1rem;
         flex-shrink: 0;
     }
-    
+
     .number-set {
         flex-direction: column;
         gap: var(--space-lg);
@@ -1207,33 +1207,33 @@ body {
         margin: 0 auto var(--space-lg);
         padding: 0 var(--space-sm);
     }
-    
+
     .lucky-ball .lucky {
         width: 44px;
         height: 44px;
         font-size: 1rem;
     }
-    
+
     .confidence-meter {
         flex-direction: column;
         gap: var(--space-sm);
     }
-    
+
     .confidence-bar {
         width: 160px;
     }
-    
+
     .strategy-tabs {
         justify-content: center;
         flex-wrap: wrap;
         gap: var(--space-sm);
     }
-    
+
     .strategy-tab {
         padding: var(--space-sm) var(--space-md);
         font-size: 0.75rem;
     }
-    
+
     .correlation-item {
         flex-direction: column;
         gap: var(--space-xs);
@@ -1251,7 +1251,7 @@ body {
     .correlation-item:hover {
         transform: translateY(-2px);
     }
-    
+
     .pattern-item {
         flex-direction: column;
         gap: var(--space-xs);
@@ -1269,23 +1269,23 @@ body {
     .pattern-item:hover {
         transform: translateY(-2px);
     }
-    
+
     .section-header h2 {
         font-size: clamp(1.75rem, 6vw, 2.5rem);
     }
-    
+
     .section-header p {
         font-size: 1rem;
         padding: 0 var(--space-sm);
     }
-    
+
     .usage-grid {
         grid-template-columns: 1fr;
         gap: var(--space-lg);
         margin: 0 var(--space-sm);
         max-width: none;
     }
-    
+
     .usage-card {
         padding: var(--space-lg);
         text-align: center;
@@ -1293,29 +1293,29 @@ body {
         width: 100%;
         box-sizing: border-box;
     }
-    
+
     .usage-icon {
         margin: 0 auto var(--space-lg);
     }
-    
+
     .code-block {
         padding: var(--space-md);
         font-size: 0.8rem;
         word-wrap: break-word;
         overflow-wrap: break-word;
     }
-    
+
     .code-block pre {
         font-size: 0.8rem;
         line-height: 1.4;
         white-space: pre-wrap;
         word-break: break-all;
     }
-    
+
     .wisdom-content {
         padding: 0 var(--space-md);
     }
-    
+
     .wisdom-quote {
         font-size: clamp(1.125rem, 4vw, 1.375rem);
         padding: 0 var(--space-lg);
@@ -1326,35 +1326,35 @@ body {
     .container {
         padding: 0 var(--space-md);
     }
-    
+
     .demo {
         padding: var(--space-xl) 0;
     }
-    
+
     .demo-grid {
         gap: var(--space-md);
         margin: 0 var(--space-xs);
         padding: 0 var(--space-xs);
     }
-    
+
     .demo-card {
         margin: 0;
         padding: var(--space-md) var(--space-sm);
         min-height: auto;
     }
-    
+
     .features-grid,
     .demo-grid,
     .usage-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .usage-grid {
         gap: var(--space-md);
         margin: 0 var(--space-xs);
         padding: 0;
     }
-    
+
     .feature-card,
     .usage-card {
         padding: var(--space-lg);
@@ -1362,7 +1362,7 @@ body {
         width: auto;
         box-sizing: border-box;
     }
-    
+
     .usage-card {
         padding: var(--space-lg) var(--space-md);
         margin: 0;
@@ -1447,26 +1447,26 @@ body {
         font-size: 1rem;
         color: var(--text-secondary);
     }
-    
+
     .hero-stats {
         gap: var(--space-md);
         margin-bottom: var(--space-xl);
     }
-    
+
     .stat {
         min-width: 80px;
     }
-    
+
     .stat-number {
         font-size: 1.5rem;
     }
-    
+
     .btn {
         max-width: 240px;
         padding: var(--space-md) var(--space-lg);
         font-size: 1rem;
     }
-    
+
     .main-numbers {
         flex-wrap: wrap;
     .main-numbers {
@@ -1475,7 +1475,7 @@ body {
         margin: 0 auto;
         padding: 0;
     }
-    
+
     .number {
         width: 32px;
         height: 32px;
@@ -1483,60 +1483,60 @@ body {
         flex-shrink: 0;
         min-width: 32px;
     }
-    
+
     .lucky-ball .lucky {
         width: 40px;
         height: 40px;
         font-size: 0.875rem;
     }
-    
+
     .footer-links {
         flex-direction: column;
         gap: var(--space-xl);
     }
-    
+
     .footer-section {
         margin-bottom: var(--space-lg);
     }
-    
+
     .demo-header h3 {
         font-size: 1rem;
     }
-    
+
     .cosmic-indicator {
         flex-direction: column;
         gap: var(--space-xs);
         align-items: center;
     }
-    
+
     .strategy-results {
         min-height: 140px;
     }
-    
+
     .correlation-results,
     .temporal-patterns {
         gap: var(--space-sm);
     }
-    
+
     .wisdom-quote {
         font-size: clamp(1rem, 5vw, 1.25rem);
         padding: 0 var(--space-sm);
     }
-    
+
     .disclaimer-content {
         padding: 0 var(--space-sm);
     }
-    
+
     .statistical-reality {
         padding: var(--space-md);
         margin: var(--space-md) 0;
     }
-    
+
     .code-block {
         padding: var(--space-sm);
         font-size: 0.75rem;
     }
-    
+
     .code-block pre {
         font-size: 0.75rem;
         line-height: 1.3;
@@ -1550,40 +1550,40 @@ body {
     .container {
         padding: 0 var(--space-sm);
     }
-    
+
     .demo {
         padding: var(--space-lg) 0;
     }
-    
+
     .demo-grid {
         gap: var(--space-sm);
         margin: 0;
         padding: 0 var(--space-xs);
     }
-    
+
     .demo-card {
         margin: 0;
         padding: var(--space-md) var(--space-sm);
     }
-    
+
     .hero-title {
         font-size: clamp(1.75rem, 9vw, 2.5rem);
     }
-    
+
     .hero-description {
         font-size: 1rem;
     }
-    
+
     .usage {
         padding: var(--space-2xl) 0;
     }
-    
+
     .usage-grid {
         gap: var(--space-sm);
         margin: 0;
         padding: 0 var(--space-xs);
     }
-    
+
     .feature-card,
     .usage-card {
         padding: var(--space-md);
@@ -1591,7 +1591,7 @@ body {
         width: auto;
         box-sizing: border-box;
     }
-    
+
     .usage-card {
         padding: var(--space-md);
         text-align: center;
@@ -1599,18 +1599,18 @@ body {
         background: var(--bg-card);
         border: 1px solid rgba(255, 255, 255, 0.1);
     }
-    
+
     .usage-icon {
         width: 50px;
         height: 50px;
         margin: 0 auto var(--space-md);
     }
-    
+
     .usage-card h3 {
         font-size: 1.125rem;
         margin-bottom: var(--space-md);
     }
-    
+
     .code-block {
         padding: var(--space-sm);
         font-size: 0.7rem;
@@ -1618,7 +1618,7 @@ body {
         overflow-x: auto;
         word-wrap: break-word;
     }
-    
+
     .code-block pre {
         font-size: 0.7rem;
         line-height: 1.2;
@@ -1637,12 +1637,12 @@ body {
     .pattern-item {
         padding: var(--space-md) var(--space-lg);
     }
-    
+
     .btn {
         max-width: 200px;
         padding: var(--space-sm) var(--space-md);
     }
-    
+
     .main-numbers {
         gap: 2px;
         flex-wrap: nowrap;
@@ -1652,28 +1652,28 @@ body {
         margin: 0 auto;
         padding: 0;
     }
-    
+
     .number {
         width: 36px;
         height: 36px;
         font-size: 0.85rem;
         flex-shrink: 0;
     }
-    
+
     .number-set {
         gap: var(--space-sm);
         margin: 0 auto var(--space-sm);
         flex-shrink: 0;
         min-width: 36px;
     }
-    
+
     .lucky-ball .lucky {
         width: 38px;
         height: 38px;
         font-size: 0.9rem;
         flex-shrink: 0;
     }
-    
+
     .number-set {
         gap: var(--space-md);
         padding: 0;
@@ -1681,23 +1681,23 @@ body {
         max-width: 100%;
         overflow: visible;
     }
-    
+
     .hero-stats {
         flex-direction: column;
         gap: var(--space-md);
         align-items: center;
     }
-    
+
     .stat {
         display: flex;
         align-items: center;
         gap: var(--space-md);
     }
-    
+
     .stat-number {
         font-size: 1.75rem;
     }
-    
+
     .stat-label {
         font-size: 0.875rem;
     }
@@ -1711,14 +1711,14 @@ body {
         font-size: 0.95rem;
         margin-bottom: 0;
     }
-    
+
     .cosmic-indicator {
         gap: var(--space-sm);
         font-size: 0.8rem;
         justify-content: center;
         flex-wrap: wrap;
     }
-    
+
     .cosmic-date,
     .current-day {
         font-size: 0.8rem;
@@ -1760,12 +1760,12 @@ html {
     .data-grid {
         display: none;
     }
-    
+
     body {
         background: white;
         color: black;
     }
-    
+
     .demo-card,
     .feature-card,
     .usage-card {

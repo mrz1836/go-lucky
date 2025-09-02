@@ -1,22 +1,22 @@
 // Initialize Lucide icons
 document.addEventListener('DOMContentLoaded', function() {
     lucide.createIcons();
-    
+
     // Initialize interactive elements
     initializeInteractivity();
-    
+
     // Initialize animations
     initializeAnimations();
-    
+
     // Initialize tracking
     initializeTracking();
-    
+
     // Initialize version display
     initializeVersionDisplay();
-    
+
     // Initialize dynamic date
     updateCosmicDate();
-    
+
     // Initialize copyright year
     updateCopyrightYear();
 });
@@ -26,15 +26,15 @@ function initializeInteractivity() {
     // Strategy tab switching
     const strategyTabs = document.querySelectorAll('.strategy-tab');
     const strategySets = document.querySelectorAll('.strategy-set');
-    
+
     strategyTabs.forEach(tab => {
         tab.addEventListener('click', function() {
             const strategy = this.dataset.strategy;
-            
+
             // Remove active class from all tabs and sets
             strategyTabs.forEach(t => t.classList.remove('active'));
             strategySets.forEach(s => s.classList.remove('active'));
-            
+
             // Add active class to clicked tab and corresponding set
             this.classList.add('active');
             const targetSet = document.querySelector(`.strategy-set[data-strategy="${strategy}"]`);
@@ -43,7 +43,7 @@ function initializeInteractivity() {
             }
         });
     });
-    
+
     // Smooth scrolling for anchor links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
@@ -57,13 +57,13 @@ function initializeInteractivity() {
             }
         });
     });
-    
+
     // Animate numbers on scroll
     const observerOptions = {
         threshold: 0.5,
         rootMargin: '0px 0px -100px 0px'
     };
-    
+
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -76,16 +76,16 @@ function initializeInteractivity() {
             }
         });
     }, observerOptions);
-    
+
     // Observe stat numbers and confidence meters
     document.querySelectorAll('.stat-number').forEach(el => {
         observer.observe(el);
     });
-    
+
     document.querySelectorAll('.confidence-meter').forEach(el => {
         observer.observe(el);
     });
-    
+
     // Cosmic wisdom quote rotation
     initializeWisdomRotation();
 }
@@ -111,31 +111,31 @@ function initializeAnimations() {
 // Animation utilities
 function animateNumbers(element) {
     const text = element.textContent;
-    
+
     // Skip animation for hero stats - they should show the correct static values
     if (element.closest('.hero-stats')) {
         return;
     }
-    
+
     const number = parseFloat(text.replace(/[^\d.]/g, ''));
-    
+
     if (isNaN(number)) return;
-    
+
     const duration = 2000;
     const steps = 60;
     const increment = number / steps;
     let current = 0;
     let step = 0;
-    
+
     const timer = setInterval(() => {
         current += increment;
         step++;
-        
+
         if (step >= steps) {
             current = number;
             clearInterval(timer);
         }
-        
+
         // Format the number based on original text
         let formattedNumber;
         if (text.includes('%')) {
@@ -145,7 +145,7 @@ function animateNumbers(element) {
         } else {
             formattedNumber = Math.floor(current).toLocaleString();
         }
-        
+
         element.textContent = formattedNumber;
     }, duration / steps);
 }
@@ -164,14 +164,14 @@ function animateConfidenceBars(meter) {
 function updateCosmicParticles() {
     const particles = document.querySelector('.cosmic-particles');
     if (!particles) return;
-    
+
     // Add dynamic cosmic effects based on time
     const now = new Date();
     const seconds = now.getSeconds();
     const intensity = (Math.sin(seconds * 0.1) + 1) * 0.5; // 0 to 1
-    
+
     particles.style.opacity = 0.3 + (intensity * 0.4);
-    
+
     // Update every second
     setTimeout(updateCosmicParticles, 1000);
 }
@@ -179,18 +179,18 @@ function updateCosmicParticles() {
 function initializeWisdomRotation() {
     const quotes = document.querySelectorAll('.wisdom-quote');
     let currentQuote = 0;
-    
+
     function rotateQuotes() {
         // Remove active class from current quote
         quotes[currentQuote].classList.remove('active');
-        
+
         // Move to next quote
         currentQuote = (currentQuote + 1) % quotes.length;
-        
+
         // Add active class to new quote
         quotes[currentQuote].classList.add('active');
     }
-    
+
     // Rotate quotes every 4 seconds
     setInterval(rotateQuotes, 4000);
 }
@@ -245,15 +245,15 @@ function generateRandomLuckyBall() {
 function updateCosmicSelection() {
     const cosmicNumbers = generateRandomCosmicNumbers();
     const luckyBall = generateRandomLuckyBall();
-    
+
     const mainNumbers = document.querySelector('.cosmic-selection .main-numbers');
     const luckyBallElement = document.querySelector('.cosmic-selection .lucky');
-    
+
     if (mainNumbers && luckyBallElement) {
         // Animate out
         mainNumbers.style.opacity = '0.5';
         luckyBallElement.style.opacity = '0.5';
-        
+
         setTimeout(() => {
             // Update numbers
             const numberElements = mainNumbers.querySelectorAll('.number');
@@ -262,9 +262,9 @@ function updateCosmicSelection() {
                     numberElements[index].textContent = num.toString().padStart(2, '0');
                 }
             });
-            
+
             luckyBallElement.textContent = luckyBall.toString();
-            
+
             // Animate in
             mainNumbers.style.opacity = '1';
             luckyBallElement.style.opacity = '1';
@@ -316,19 +316,19 @@ function initializeVersionDisplay() {
 async function fetchLatestVersion() {
     const versionElement = document.getElementById('version-display');
     const versionLinkIcon = document.getElementById('version-link');
-    
+
     if (!versionElement) {
         console.log('⚠️ Version display element not found');
         return;
     }
-    
+
     try {
         // Add loading state
         versionElement.classList.add('loading');
         versionElement.textContent = 'Loading...';
-        
+
         console.log('📡 Fetching latest release from GitHub API...');
-        
+
         // Fetch latest release from GitHub API
         const response = await fetch('https://api.github.com/repos/mrz1836/go-lucky/releases/latest', {
             headers: {
@@ -336,44 +336,44 @@ async function fetchLatestVersion() {
                 'User-Agent': 'Go-Lucky-Website'
             }
         });
-        
+
         if (!response.ok) {
             throw new Error(`GitHub API responded with ${response.status}: ${response.statusText}`);
         }
-        
+
         const release = await response.json();
-        
+
         // Extract version info
         const version = release.tag_name || 'Unknown';
         const releaseUrl = release.html_url;
         const publishedAt = new Date(release.published_at);
         const isPrerelease = release.prerelease;
-        
+
         // Update display
         versionElement.classList.remove('loading');
         versionElement.textContent = version;
         versionElement.title = `Released ${publishedAt.toLocaleDateString()}${isPrerelease ? ' (Pre-release)' : ''}`;
-        
+
         // Update both the version number link and icon link to point to specific release
         if (releaseUrl) {
             versionElement.href = releaseUrl;
             versionElement.title = `View ${version} release notes`;
-            
+
             if (versionLinkIcon) {
                 versionLinkIcon.href = releaseUrl;
                 versionLinkIcon.title = `View ${version} release notes`;
             }
         }
-        
+
         // Add prerelease styling if applicable
         if (isPrerelease) {
             versionElement.style.background = 'rgba(245, 158, 11, 0.1)';
             versionElement.style.borderColor = 'rgba(245, 158, 11, 0.2)';
             versionElement.style.color = 'var(--warning)';
         }
-        
+
         console.log(`✅ Version display updated: ${version}`);
-        
+
         // Track version fetch success
         if (typeof gtag !== 'undefined') {
             gtag('event', 'version_fetch_success', {
@@ -384,16 +384,16 @@ async function fetchLatestVersion() {
                 value: 1
             });
         }
-        
+
     } catch (error) {
         console.error('❌ Failed to fetch version:', error);
-        
+
         // Show error state
         versionElement.classList.remove('loading');
         versionElement.classList.add('error');
         versionElement.textContent = 'v1.0.0'; // Fallback version
         versionElement.title = 'Could not fetch latest version from GitHub';
-        
+
         // Track version fetch error
         if (typeof gtag !== 'undefined') {
             gtag('event', 'version_fetch_error', {
@@ -415,35 +415,35 @@ setInterval(() => {
 // Google Analytics / GTM Tracking Functions
 function initializeTracking() {
     console.log('🔍 Initializing tracking for external links and buttons...');
-    
+
     // Track all external links
     trackExternalLinks();
-    
+
     // Track specific button interactions
     trackButtonClicks();
-    
+
     // Track scroll depth
     trackScrollDepth();
-    
+
     // Track time on page milestones
     trackTimeOnPage();
-    
+
     console.log('✅ Tracking initialized successfully');
 }
 
 function trackExternalLinks() {
     // Get all external links (links that go to different domains or specific external sites)
     const externalLinks = document.querySelectorAll('a[href^="http"], a[href^="https"], a[target="_blank"]');
-    
+
     externalLinks.forEach(link => {
         const href = link.getAttribute('href');
         const text = link.textContent.trim();
-        
+
         // Skip if it's an internal link to the same domain
         if (href && (href.includes(window.location.hostname) || href.startsWith('/'))) {
             return;
         }
-        
+
         link.addEventListener('click', function(e) {
             const linkData = {
                 event_category: 'External Link',
@@ -453,7 +453,7 @@ function trackExternalLinks() {
                 link_domain: getDomainFromUrl(href),
                 source_section: getSourceSection(this)
             };
-            
+
             // Send to Google Analytics 4
             if (typeof gtag !== 'undefined') {
                 gtag('event', 'click_external_link', {
@@ -466,7 +466,7 @@ function trackExternalLinks() {
                     value: 1
                 });
             }
-            
+
             // Send to Google Tag Manager (dataLayer)
             if (typeof dataLayer !== 'undefined') {
                 dataLayer.push({
@@ -478,24 +478,24 @@ function trackExternalLinks() {
                     source_section: linkData.source_section
                 });
             }
-            
+
             console.log('📊 External link tracked:', linkData);
         });
     });
-    
+
     console.log(`🔗 Tracking ${externalLinks.length} external links`);
 }
 
 function trackButtonClicks() {
     // Track all buttons and CTA elements
     const buttons = document.querySelectorAll('.btn, button, .strategy-tab');
-    
+
     buttons.forEach(button => {
         button.addEventListener('click', function(e) {
             const buttonText = this.textContent.trim();
             const buttonClass = this.className;
             const isExternal = this.getAttribute('href') && !this.getAttribute('href').startsWith('#');
-            
+
             const buttonData = {
                 event_category: 'Button Click',
                 event_label: buttonText,
@@ -504,7 +504,7 @@ function trackButtonClicks() {
                 source_section: getSourceSection(this),
                 is_external: isExternal
             };
-            
+
             // Send to Google Analytics 4
             if (typeof gtag !== 'undefined') {
                 gtag('event', 'click_button', {
@@ -517,7 +517,7 @@ function trackButtonClicks() {
                     value: 1
                 });
             }
-            
+
             // Send to Google Tag Manager
             if (typeof dataLayer !== 'undefined') {
                 dataLayer.push({
@@ -530,27 +530,27 @@ function trackButtonClicks() {
                     is_external: buttonData.is_external
                 });
             }
-            
+
             console.log('🎯 Button click tracked:', buttonData);
         });
     });
-    
+
     console.log(`🎯 Tracking ${buttons.length} buttons and interactive elements`);
 }
 
 function trackScrollDepth() {
     const scrollMilestones = [25, 50, 75, 90, 100];
     const reached = new Set();
-    
+
     function checkScrollDepth() {
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
         const docHeight = document.documentElement.scrollHeight - window.innerHeight;
         const scrollPercent = Math.round((scrollTop / docHeight) * 100);
-        
+
         scrollMilestones.forEach(milestone => {
             if (scrollPercent >= milestone && !reached.has(milestone)) {
                 reached.add(milestone);
-                
+
                 // Send to Google Analytics 4
                 if (typeof gtag !== 'undefined') {
                     gtag('event', 'scroll_depth', {
@@ -560,7 +560,7 @@ function trackScrollDepth() {
                         value: milestone
                     });
                 }
-                
+
                 // Send to Google Tag Manager
                 if (typeof dataLayer !== 'undefined') {
                     dataLayer.push({
@@ -570,12 +570,12 @@ function trackScrollDepth() {
                         scroll_label: `${milestone}%`
                     });
                 }
-                
+
                 console.log(`📏 Scroll depth tracked: ${milestone}%`);
             }
         });
     }
-    
+
     // Throttled scroll listener
     let scrollTimeout;
     window.addEventListener('scroll', function() {
@@ -590,18 +590,18 @@ function trackTimeOnPage() {
     const timeMilestones = [30, 60, 120, 300, 600]; // 30s, 1m, 2m, 5m, 10m
     const reached = new Set();
     const startTime = Date.now();
-    
+
     function checkTimeOnPage() {
         const timeOnPage = Math.round((Date.now() - startTime) / 1000);
-        
+
         timeMilestones.forEach(milestone => {
             if (timeOnPage >= milestone && !reached.has(milestone)) {
                 reached.add(milestone);
-                
+
                 const minutes = Math.floor(milestone / 60);
                 const seconds = milestone % 60;
                 const timeLabel = minutes > 0 ? `${minutes}m${seconds > 0 ? ` ${seconds}s` : ''}` : `${seconds}s`;
-                
+
                 // Send to Google Analytics 4
                 if (typeof gtag !== 'undefined') {
                     gtag('event', 'time_on_page', {
@@ -611,7 +611,7 @@ function trackTimeOnPage() {
                         value: milestone
                     });
                 }
-                
+
                 // Send to Google Tag Manager
                 if (typeof dataLayer !== 'undefined') {
                     dataLayer.push({
@@ -621,12 +621,12 @@ function trackTimeOnPage() {
                         time_label: timeLabel
                     });
                 }
-                
+
                 console.log(`⏱️ Time on page tracked: ${timeLabel}`);
             }
         });
     }
-    
+
     // Check time milestones every 10 seconds
     setInterval(checkTimeOnPage, 10000);
 }
@@ -647,7 +647,7 @@ function getSourceSection(element) {
         // Try to get section class or ID
         if (section.className) {
             const classes = section.className.split(' ');
-            const sectionClass = classes.find(cls => 
+            const sectionClass = classes.find(cls =>
                 ['hero', 'features', 'demo', 'usage', 'wisdom', 'disclaimer', 'footer'].includes(cls)
             );
             if (sectionClass) return sectionClass;
@@ -661,13 +661,13 @@ function getSourceSection(element) {
 function getButtonType(button) {
     // Determine button type based on classes and context
     const classes = button.className.toLowerCase();
-    
+
     if (classes.includes('btn-primary')) return 'primary';
     if (classes.includes('btn-secondary')) return 'secondary';
     if (classes.includes('strategy-tab')) return 'strategy-tab';
     if (button.tagName.toLowerCase() === 'button') return 'button';
     if (button.tagName.toLowerCase() === 'a') return 'link';
-    
+
     return 'unknown';
 }
 
@@ -679,12 +679,12 @@ function trackCosmicInteraction(interactionType, details = {}) {
         interaction_type: interactionType,
         ...details
     };
-    
+
     // Send to Google Analytics 4
     if (typeof gtag !== 'undefined') {
         gtag('event', 'cosmic_interaction', eventData);
     }
-    
+
     // Send to Google Tag Manager
     if (typeof dataLayer !== 'undefined') {
         dataLayer.push({
@@ -694,7 +694,7 @@ function trackCosmicInteraction(interactionType, details = {}) {
             ...details
         });
     }
-    
+
     console.log('🌌 Cosmic interaction tracked:', eventData);
 }
 
@@ -702,10 +702,10 @@ function trackCosmicInteraction(interactionType, details = {}) {
 function updateCosmicSelection() {
     const cosmicNumbers = generateRandomCosmicNumbers();
     const luckyBall = generateRandomLuckyBall();
-    
+
     const mainNumbers = document.querySelector('.cosmic-selection .main-numbers');
     const luckyBallElement = document.querySelector('.cosmic-selection .lucky');
-    
+
     if (mainNumbers && luckyBallElement) {
         // Track the cosmic number generation
         trackCosmicInteraction('number_generation', {
@@ -713,11 +713,11 @@ function updateCosmicSelection() {
             lucky_ball: luckyBall,
             generation_type: 'automatic'
         });
-        
+
         // Animate out
         mainNumbers.style.opacity = '0.5';
         luckyBallElement.style.opacity = '0.5';
-        
+
         setTimeout(() => {
             // Update numbers
             const numberElements = mainNumbers.querySelectorAll('.number');
@@ -726,15 +726,15 @@ function updateCosmicSelection() {
                     numberElements[index].textContent = num.toString().padStart(2, '0');
                 }
             });
-            
+
             luckyBallElement.textContent = luckyBall.toString();
-            
+
             // Animate in
             mainNumbers.style.opacity = '1';
             luckyBallElement.style.opacity = '1';
         }, 300);
     }
-    
+
     // Update the date as well
     updateCosmicDate();
 }
@@ -744,22 +744,22 @@ function updateCosmicDate() {
     const cosmicDateElement = document.querySelector('.cosmic-date');
     if (cosmicDateElement) {
         const now = new Date();
-        const options = { 
-            year: 'numeric', 
-            month: 'long', 
+        const options = {
+            year: 'numeric',
+            month: 'long',
             day: 'numeric',
             timeZone: 'America/New_York' // Eastern Time for consistency
         };
-        
+
         const formattedDate = now.toLocaleDateString('en-US', options);
-        
+
         // Animate the date change
         cosmicDateElement.style.opacity = '0.7';
         setTimeout(() => {
             cosmicDateElement.textContent = formattedDate;
             cosmicDateElement.style.opacity = '1';
         }, 150);
-        
+
         console.log(`🗓️ Cosmic date updated to: ${formattedDate}`);
     }
 }

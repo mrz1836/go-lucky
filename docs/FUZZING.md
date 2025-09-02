@@ -137,11 +137,11 @@ func FuzzNewFeature(f *testing.F) {
     // Add seed corpus
     f.Add("normal input")
     f.Add("edge case")
-    
+
     f.Fuzz(func(t *testing.T, input string) {
         // Call function with fuzz input
         result, err := NewFeature(input)
-        
+
         // Validate invariants
         if err == nil {
             // Check result properties

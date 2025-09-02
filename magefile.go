@@ -134,7 +134,7 @@ func (Build) Dev() error {
 	fmt.Println("🔧 Building development version...")
 
 	// Ensure bin directory exists
-	if err := os.MkdirAll("bin", 0755); err != nil {
+	if err := os.MkdirAll("bin", 0o750); err != nil {
 		return fmt.Errorf("failed to create bin directory: %w", err)
 	}
 
