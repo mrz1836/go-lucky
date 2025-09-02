@@ -90,6 +90,7 @@ Get up and running with go-lucky in under 3 minutes!
 
 ### Prerequisites
 - [Go 1.21+](https://golang.org/doc/install) installed
+- [MAGE-X](https://github.com/mrz1836/mage-x) installed (`go install github.com/mrz1836/mage-x@latest`)
 - Historical lottery data file (included: `data/lucky-numbers-history.csv`)
 
 ### Installation
@@ -114,9 +115,6 @@ magex analysis:simple
 
 # Generate multiple number recommendation sets
 magex quick:luckypicks
-
-# See all available commands
-magex -l
 ```
 
 **That's it!** 🎉 go-lucky automatically:
@@ -545,15 +543,15 @@ func (ce *CorrelationEngine) analyzeNewFactor() {
 ## 🎯 Mage Commands Reference
 
 ### 📊 Analysis Commands
-| Command                    | Description                               | Use Case                  |
-|----------------------------|-------------------------------------------|---------------------------|
-| `magex analysis:full`      | 🌟 Complete cosmic + statistical analysis | **Recommended first run** |
-| `magex analysis:simple`    | Quick summary with hot numbers            | Daily number checking     |
+| Command                      | Description                               | Use Case                  |
+|------------------------------|-------------------------------------------|---------------------------|
+| `magex analysis:full`        | 🌟 Complete cosmic + statistical analysis | **Recommended first run** |
+| `magex analysis:simple`      | Quick summary with hot numbers            | Daily number checking     |
 | `magex analysis:statistical` | Detailed mathematical analysis            | Academic/research use     |
-| `magex analysis:cosmic`    | Cosmic correlations only                  | Educational demonstration |
-| `magex quick:luckypicks`   | Generate multiple number sets             | Number selection variety  |
-| `magex quick:hotnumbers`   | Show current hot numbers                  | Quick trending check      |
-| `magex quick:overdue`      | Show most overdue numbers                 | Gap analysis focus        |
+| `magex analysis:cosmic`      | Cosmic correlations only                  | Educational demonstration |
+| `magex quick:luckypicks`     | Generate multiple number sets             | Number selection variety  |
+| `magex quick:hotnumbers`     | Show current hot numbers                  | Quick trending check      |
+| `magex quick:overdue`        | Show most overdue numbers                 | Gap analysis focus        |
 
 ### 📁 Export Commands
 | Command             | Description                  | Output                           |
@@ -566,10 +564,8 @@ func (ce *CorrelationEngine) analyzeNewFactor() {
 |-----------------------|-------------------------------|-----------------------|
 | `magex build:dev`     | Build the analyzer binary     | Local development     |
 | `magex test`          | Run all tests                 | Before committing     |
-| `magex docs:coverage` | Generate test coverage report | Coverage verification |
 | `magex lint`          | Run code linters              | Code quality check    |
 | `magex benchmark`     | Run performance benchmarks    | Performance testing   |
-| `magex clean`         | Clean up generated files      | Cleanup workspace     |
 | `magex deps:tidy`     | Install/update dependencies   | Initial setup         |
 
 ### 🎭 Fun Commands
@@ -586,12 +582,6 @@ magex lint && magex test && magex build:dev
 
 # Analysis workflow
 magex analysis:full && magex export:json
-
-# Performance testing
-magex clean && time magex analysis:full
-
-# Coverage verification
-magex test && magex docs:coverage
 ```
 
 <br/>
@@ -738,9 +728,6 @@ git push origin feature/amazing-analysis
 ```bash
 # Run the full test suite
 magex test
-
-# Check test coverage
-magex docs:coverage
 
 # Verify code quality
 magex lint
