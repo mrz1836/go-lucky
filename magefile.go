@@ -15,8 +15,8 @@ import (
 
 // Variables
 const (
-	binaryName   = "lottery-analyzer"
-	binaryPath   = "./bin/lottery-analyzer"
+	binaryName   = "go-lucky"
+	binaryPath   = "./bin/go-lucky"
 	coverageFile = "coverage.out"
 	testTimeout  = "30s"
 )

@@ -1,6 +1,6 @@
 project:
   name: go-lucky
-  binary: lottery-analyzer
+  binary: go-lucky
   module: github.com/mrz1836/go-lucky
   main: ./cmd/go-lucky/main.go
 
@@ -13,4 +13,4 @@ build:
     - "-X main.buildDate={{.Date}}"
   flags:
     - "-trimpath"
-  output: "./bin/lottery-analyzer"
+  output: "./bin/go-lucky"

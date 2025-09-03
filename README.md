@@ -484,7 +484,7 @@ magex test
 magex build:dev
 
 # Run local analysis
-./bin/lottery-analyzer --simple
+./bin/go-lucky --simple
 ```
 
 **Development Guidelines:**
