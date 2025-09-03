@@ -2,6 +2,8 @@
 #  Collect Cache Statistics Composite Action (GoFortress)
 #
 #  Purpose: Standardize cache statistics collection across all GoFortress workflows.
+#  Creates performance cache statistics (perf-cache-*) for test/coverage workflows
+#  and infrastructure cache statistics (infra-cache-*) for tooling workflows.
 #
 #  Features:
 #    - Preserves exact JSON structure from existing implementations
@@ -31,6 +33,10 @@ inputs:
   workflow-name:
     description: "Name of the workflow (e.g., 'pre-commit', 'coverage', 'test-suite')"
     required: true
+  cache-prefix:
+    description: "Prefix for cache artifact (perf-cache for performance workflows, infra-cache for infrastructure)"
+    required: false
+    default: "perf-cache"
   job-name:
     description: "Name of the current job"
     required: true
@@ -60,7 +66,7 @@ inputs:
 outputs:
   stats-file:
     description: "Path to the generated cache statistics file"
-    value: cache-stats-${{ inputs.workflow-name }}.json
+    value: ${{ inputs.cache-prefix }}-${{ inputs.workflow-name }}.json
   stats-json:
     description: "Cache statistics as JSON string"
     value: ${{ steps.collect.outputs.stats-json }}
@@ -97,8 +103,8 @@ runs:
           GOLANGCI_SIZE=$(du -sh "$HOME/.cache/golangci-lint" 2>/dev/null | cut -f1 || echo "0B")
         fi
 
-        # Create cache statistics JSON file (preserves exact format from existing workflows)
-        OUTPUT_FILE="cache-stats-${{ inputs.workflow-name }}.json"
+        # Create cache statistics JSON file with new prefix-based naming
+        OUTPUT_FILE="${{ inputs.cache-prefix }}-${{ inputs.workflow-name }}.json"
 
         echo '{' > "$OUTPUT_FILE"
         echo '  "os": "${{ inputs.os }}",' >> "$OUTPUT_FILE"

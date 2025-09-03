@@ -130,22 +130,23 @@ jobs:
         if: always()
         uses: ./.github/actions/collect-cache-stats
         with:
-          workflow-name: code-quality
+          workflow-name: govet
           job-name: govet
           os: ${{ inputs.primary-runner }}
           go-version: ${{ inputs.go-primary-version }}
+          cache-prefix: cache-stats
           gomod-cache-hit: ${{ steps.setup-go-vet.outputs.module-cache-hit }}
           gobuild-cache-hit: ${{ steps.setup-go-vet.outputs.build-cache-hit }}
 
       # ————————————————————————————————————————————————————————————————
-      # Upload cache statistics
+      # Upload infrastructure cache statistics
       # ————————————————————————————————————————————————————————————————
-      - name: 📤 Upload cache statistics
+      - name: 📤 Upload infrastructure cache statistics
         if: always()
         uses: ./.github/actions/upload-statistics
         with:
           artifact-name: cache-stats-govet
-          artifact-path: cache-stats-code-quality.json
+          artifact-path: cache-stats-govet.json
           retention-days: 1
 
   # ----------------------------------------------------------------------------------
@@ -268,23 +269,24 @@ jobs:
         if: always()
         uses: ./.github/actions/collect-cache-stats
         with:
-          workflow-name: code-quality
+          workflow-name: lint
           job-name: lint
           os: ${{ inputs.primary-runner }}
           go-version: ${{ inputs.go-primary-version }}
+          cache-prefix: cache-stats
           gomod-cache-hit: ${{ steps.setup-go-lint.outputs.module-cache-hit }}
           gobuild-cache-hit: ${{ steps.setup-go-lint.outputs.build-cache-hit }}
           include-golangci: true
 
       # ————————————————————————————————————————————————————————————————
-      # Upload cache statistics
+      # Upload infrastructure cache statistics
       # ————————————————————————————————————————————————————————————————
-      - name: 📤 Upload cache statistics
+      - name: 📤 Upload infrastructure cache statistics
         if: always()
         uses: ./.github/actions/upload-statistics
         with:
           artifact-name: cache-stats-lint
-          artifact-path: cache-stats-code-quality.json
+          artifact-path: cache-stats-lint.json
           retention-days: 1
 
   # ----------------------------------------------------------------------------------

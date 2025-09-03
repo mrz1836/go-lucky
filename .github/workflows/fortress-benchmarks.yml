@@ -117,7 +117,7 @@ jobs:
           echo "📋 Benchmark Mode: ${{ env.BENCHMARK_MODE }}"
 
           # Create output file for raw benchmark results
-          BENCH_OUTPUT_FILE="benchmark-results-${{ matrix.os }}-${{ matrix.go-version }}.txt"
+          BENCH_OUTPUT_FILE="bench-results-${{ matrix.os }}-${{ matrix.go-version }}.txt"
 
           # Determine which benchmark command to run based on mode
           case "${{ env.BENCHMARK_MODE }}" in
@@ -186,8 +186,8 @@ jobs:
             -exec grep -h '^func Benchmark' {} + | wc -l)
 
           # Parse benchmark results
-          BENCH_OUTPUT_FILE="benchmark-results-${{ matrix.os }}-${{ matrix.go-version }}.txt"
-          STATS_FILE="benchmark-stats-${{ matrix.os }}-${{ matrix.go-version }}.json"
+          BENCH_OUTPUT_FILE="bench-results-${{ matrix.os }}-${{ matrix.go-version }}.txt"
+          STATS_FILE="bench-stats-${{ matrix.os }}-${{ matrix.go-version }}.json"
 
           # Create a pretty summary of benchmark results
           BENCH_SUMMARY=""
@@ -255,14 +255,39 @@ jobs:
           jq . "$STATS_FILE"
 
       # ————————————————————————————————————————————————————————————————
+      # Collect performance cache statistics
+      # ————————————————————————————————————————————————————————————————
+      - name: 📊 Collect performance cache statistics
+        uses: ./.github/actions/collect-cache-stats
+        with:
+          workflow-name: benchmark-${{ matrix.os }}-${{ matrix.go-version }}
+          job-name: benchmarks
+          os: ${{ matrix.os }}
+          go-version: ${{ matrix.go-version }}
+          cache-prefix: cache-stats
+          gomod-cache-hit: ${{ steps.setup-go-bench.outputs.module-cache-hit }}
+          gobuild-cache-hit: ${{ steps.setup-go-bench.outputs.build-cache-hit }}
+
+      # ————————————————————————————————————————————————————————————————
+      # Upload performance cache statistics
+      # ————————————————————————————————————————————————————————————————
+      - name: 📤 Upload performance cache statistics
+        if: always()
+        uses: ./.github/actions/upload-statistics
+        with:
+          artifact-name: cache-stats-benchmark-${{ matrix.os }}-${{ matrix.go-version }}
+          artifact-path: cache-stats-benchmark-${{ matrix.os }}-${{ matrix.go-version }}.json
+          retention-days: "1"
+
+      # ————————————————————————————————————————————————————————————————
       # Upload benchmark statistics
       # ————————————————————————————————————————————————————————————————
       - name: 📤 Upload benchmark statistics
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: benchmark-stats-${{ matrix.os }}-${{ matrix.go-version }}
-          path: benchmark-stats-*.json
+          name: bench-stats-${{ matrix.os }}-${{ matrix.go-version }}
+          path: bench-stats-${{ matrix.os }}-${{ matrix.go-version }}.json
           retention-days: 1
 
       # ————————————————————————————————————————————————————————————————
@@ -272,6 +297,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: benchmark-results-${{ matrix.os }}-${{ matrix.go-version }}
-          path: benchmark-results-*.txt
+          name: bench-results-${{ matrix.os }}-${{ matrix.go-version }}
+          path: bench-results-${{ matrix.os }}-${{ matrix.go-version }}.txt
           retention-days: 7 # Keep raw results longer for analysis

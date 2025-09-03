@@ -450,13 +450,14 @@ jobs:
           job-name: test-go
           os: ${{ matrix.os }}
           go-version: ${{ matrix.go-version }}
+          cache-prefix: cache-stats
           gomod-cache-hit: ${{ steps.setup-go-test.outputs.module-cache-hit }}
           gobuild-cache-hit: ${{ steps.setup-go-test.outputs.build-cache-hit }}
 
       # ————————————————————————————————————————————————————————————————
-      # Upload cache statistics for completion report
+      # Upload performance cache statistics for completion report
       # ————————————————————————————————————————————————————————————————
-      - name: 📤 Upload cache statistics
+      - name: 📤 Upload performance cache statistics
         uses: ./.github/actions/upload-statistics
         with:
           artifact-name: cache-stats-test-${{ matrix.os }}-${{ matrix.go-version }}
@@ -470,7 +471,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: test-results-${{ matrix.os }}-${{ matrix.go-version }}
+          name: test-results-unit-${{ matrix.os }}-${{ matrix.go-version }}
           path: |
             test-output.log
             test-failures.txt

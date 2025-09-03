@@ -280,22 +280,23 @@ jobs:
           output-file: "fuzz-output.log"
 
       # ————————————————————————————————————————————————————————————————
-      # Collect cache performance statistics
+      # Collect performance cache statistics
       # ————————————————————————————————————————————————————————————————
-      - name: 📊 Collect cache statistics
+      - name: 📊 Collect performance cache statistics
         uses: ./.github/actions/collect-cache-stats
         with:
           workflow-name: fuzz
           job-name: fuzz-tests
           os: ${{ inputs.primary-runner }}
           go-version: ${{ inputs.go-primary-version }}
+          cache-prefix: cache-stats
           gomod-cache-hit: ${{ steps.setup-go-fuzz.outputs.module-cache-hit }}
           gobuild-cache-hit: ${{ steps.setup-go-fuzz.outputs.build-cache-hit }}
 
       # ————————————————————————————————————————————————————————————————
-      # Upload cache statistics for completion report
+      # Upload performance cache statistics for completion report
       # ————————————————————————————————————————————————————————————————
-      - name: 📤 Upload cache statistics
+      - name: 📤 Upload performance cache statistics
         if: always()
         uses: ./.github/actions/upload-statistics
         with:
@@ -310,7 +311,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: fuzz-results-${{ inputs.primary-runner }}-${{ inputs.go-primary-version }}
+          name: test-results-fuzz-${{ inputs.primary-runner }}-${{ inputs.go-primary-version }}
           path: |
             fuzz-output.log
             fuzz-failures.txt
@@ -325,6 +326,6 @@ jobs:
         if: always()
         uses: ./.github/actions/upload-statistics
         with:
-          artifact-name: fuzz-stats-${{ inputs.primary-runner }}-${{ inputs.go-primary-version }}
+          artifact-name: test-stats-fuzz-${{ inputs.primary-runner }}-${{ inputs.go-primary-version }}
           artifact-path: ${{ steps.fuzz-summary.outputs.statistics-file }}
           retention-days: "1"

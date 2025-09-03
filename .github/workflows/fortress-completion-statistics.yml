@@ -19,10 +19,6 @@ name: GoFortress (Completion Statistics)
 on:
   workflow_call:
     inputs:
-      artifacts-data:
-        description: "JSON string of artifact metadata"
-        required: true
-        type: string
       timing-metrics:
         description: "JSON string of timing data"
         required: true
@@ -82,14 +78,79 @@ jobs:
           done
 
       # ————————————————————————————————————————————————————————————————
-      # Download artifacts from main workflow
+      # Download specific artifacts needed for statistics processing
       # ————————————————————————————————————————————————————————————————
-      - name: 📥 Download artifacts
+      - name: 📥 Download test statistics
         if: always()
-        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+        uses: ./.github/actions/download-artifact-resilient
         with:
-          pattern: "*-stats-*"
+          pattern: "test-stats-*"
           path: ./artifacts/
+          merge-multiple: true
+          max-retries: ${{ env.ARTIFACT_DOWNLOAD_RETRIES }}
+          retry-delay: ${{ env.ARTIFACT_DOWNLOAD_RETRY_DELAY }}
+          timeout: ${{ env.ARTIFACT_DOWNLOAD_TIMEOUT }}
+          continue-on-error: ${{ env.ARTIFACT_DOWNLOAD_CONTINUE_ON_ERROR }}
+
+      - name: 📥 Download benchmark statistics
+        if: always()
+        uses: ./.github/actions/download-artifact-resilient
+        with:
+          pattern: "bench-stats-*"
+          path: ./artifacts/
+          merge-multiple: true
+          max-retries: ${{ env.ARTIFACT_DOWNLOAD_RETRIES }}
+          retry-delay: ${{ env.ARTIFACT_DOWNLOAD_RETRY_DELAY }}
+          timeout: ${{ env.ARTIFACT_DOWNLOAD_TIMEOUT }}
+          continue-on-error: ${{ env.ARTIFACT_DOWNLOAD_CONTINUE_ON_ERROR }}
+
+      - name: 📥 Download cache statistics
+        if: always()
+        uses: ./.github/actions/download-artifact-resilient
+        with:
+          pattern: "cache-stats-*"
+          path: ./artifacts/
+          merge-multiple: true
+          max-retries: ${{ env.ARTIFACT_DOWNLOAD_RETRIES }}
+          retry-delay: ${{ env.ARTIFACT_DOWNLOAD_RETRY_DELAY }}
+          timeout: ${{ env.ARTIFACT_DOWNLOAD_TIMEOUT }}
+          continue-on-error: ${{ env.ARTIFACT_DOWNLOAD_CONTINUE_ON_ERROR }}
+
+      - name: 📥 Download internal coverage statistics
+        if: always()
+        uses: ./.github/actions/download-artifact-resilient
+        with:
+          pattern: "coverage-stats-internal"
+          path: ./artifacts/
+          merge-multiple: false
+          max-retries: ${{ env.ARTIFACT_DOWNLOAD_RETRIES }}
+          retry-delay: ${{ env.ARTIFACT_DOWNLOAD_RETRY_DELAY }}
+          timeout: ${{ env.ARTIFACT_DOWNLOAD_TIMEOUT }}
+          continue-on-error: true
+
+      - name: 📥 Download codecov coverage statistics
+        if: always() && env.GO_COVERAGE_PROVIDER == 'codecov'
+        uses: ./.github/actions/download-artifact-resilient
+        with:
+          pattern: "coverage-stats-codecov"
+          path: ./artifacts/
+          merge-multiple: false
+          max-retries: ${{ env.ARTIFACT_DOWNLOAD_RETRIES }}
+          retry-delay: ${{ env.ARTIFACT_DOWNLOAD_RETRY_DELAY }}
+          timeout: ${{ env.ARTIFACT_DOWNLOAD_TIMEOUT }}
+          continue-on-error: true
+
+      - name: 📥 Download coverage statistics (fallback)
+        if: always()
+        uses: ./.github/actions/download-artifact-resilient
+        with:
+          pattern: "coverage-stats-*"
+          path: ./artifacts/
+          merge-multiple: true
+          max-retries: ${{ env.ARTIFACT_DOWNLOAD_RETRIES }}
+          retry-delay: ${{ env.ARTIFACT_DOWNLOAD_RETRY_DELAY }}
+          timeout: ${{ env.ARTIFACT_DOWNLOAD_TIMEOUT }}
+          continue-on-error: true
 
       - name: 🗂️ Flatten artifacts
         if: always()
@@ -209,7 +270,7 @@ jobs:
         id: process-benchmarks
         run: |
           # Process benchmark statistics if available
-          if compgen -G "benchmark-stats-*.json" >/dev/null 2>&1; then
+          if compgen -G "bench-stats-*.json" >/dev/null 2>&1; then
             {
               echo ""
               echo ""
@@ -218,7 +279,7 @@ jobs:
 
             # Get benchmark mode from the first stats file
             BENCH_MODE="normal"
-            for stats_file in benchmark-stats-*.json; do
+            for stats_file in bench-stats-*.json; do
               if [ -f "$stats_file" ]; then
                 BENCH_MODE=$(jq -r '.benchmark_mode // "normal"' "$stats_file")
                 break
@@ -236,7 +297,7 @@ jobs:
             TOTAL_BENCHMARKS=0
             TOTAL_DURATION=0
 
-            for stats_file in benchmark-stats-*.json; do
+            for stats_file in bench-stats-*.json; do
               if [ -f "$stats_file" ]; then
                 NAME=$(jq -r '.name' "$stats_file")
                 DURATION=$(jq -r '.duration_seconds' "$stats_file")
@@ -262,7 +323,7 @@ jobs:
               echo ""
             } >> statistics-section.md
 
-            for stats_file in benchmark-stats-*.json; do
+            for stats_file in bench-stats-*.json; do
               if [ -f "$stats_file" ]; then
                 NAME=$(jq -r '.name' "$stats_file")
                 BENCHMARK_SUMMARY=$(jq -r '.benchmark_summary' "$stats_file")
@@ -371,6 +432,7 @@ jobs:
               FILES_PROCESSED=$(jq -r '.files_processed // "N/A"' "$VALID_COVERAGE_FILE")
               BADGE_GENERATED=$(jq -r '.badge_generated // "false"' "$VALID_COVERAGE_FILE")
               PAGES_DEPLOYED=$(jq -r '.pages_deployed // "false"' "$VALID_COVERAGE_FILE")
+              COVERAGE_PROVIDER=$(jq -r '.provider // "N/A"' "$VALID_COVERAGE_FILE")
 
               echo "📋 Coverage metrics: ${COVERAGE_PERCENT}%, ${FILES_PROCESSED} files, ${PROCESSING_TIME}s processing"
 
@@ -380,12 +442,13 @@ jobs:
                 echo "| **Coverage Percentage** | $COVERAGE_PERCENT% |"
                 echo "| **Processing Time** | ${PROCESSING_TIME}s |"
                 echo "| **Files Processed** | $FILES_PROCESSED |"
+                echo "| **Coverage Provider** | $([ "$COVERAGE_PROVIDER" == "internal" ] && echo "go-coverage" || ([ "$COVERAGE_PROVIDER" == "codecov" ] && echo "Codecov" || echo "$COVERAGE_PROVIDER")) |"
                 echo "| **Badge Generated** | $([ "$BADGE_GENERATED" == "true" ] && echo "✅ Yes" || echo "❌ No") |"
                 echo "| **Pages Deployed** | $([ "$PAGES_DEPLOYED" == "true" ] && echo "✅ Yes" || echo "❌ No") |"
               } >> statistics-section.md
 
               # Store metrics for output
-              echo "coverage-metrics={\"percentage\":\"$COVERAGE_PERCENT\",\"files_processed\":\"$FILES_PROCESSED\",\"processing_time\":\"$PROCESSING_TIME\"}" >> $GITHUB_OUTPUT
+              echo "coverage-metrics={\"percentage\":\"$COVERAGE_PERCENT\",\"files_processed\":\"$FILES_PROCESSED\",\"processing_time\":\"$PROCESSING_TIME\",\"provider\":\"$COVERAGE_PROVIDER\"}" >> $GITHUB_OUTPUT
             fi
           elif [[ "${{ env.ENABLE_CODE_COVERAGE }}" == "true" ]]; then
             # Coverage is enabled but no coverage data found - show status
@@ -490,11 +553,26 @@ jobs:
       # ————————————————————————————————————————————————————————————————
       - name: 📤 Upload Statistics Section
         id: upload-section
+        if: always()
+        run: |
+          if [ -f "statistics-section.md" ] && [ -s "statistics-section.md" ]; then
+            echo "📊 Statistics section found, uploading..."
+            ls -la statistics-section.md
+            echo "📋 Content preview:"
+            head -5 statistics-section.md
+          else
+            echo "⚠️ Statistics section file missing or empty, creating minimal section..."
+            echo "### 📊 Statistics Section" > statistics-section.md
+            echo "No statistics data available for this run." >> statistics-section.md
+          fi
+
+      - name: 📤 Upload Statistics Artifact
         uses: ./.github/actions/upload-statistics
         with:
           artifact-name: "statistics-section"
           artifact-path: "statistics-section.md"
           retention-days: "1"
+          if-no-files-found: "warn"
 
       - name: 📋 Set Output Content
         id: set-output

@@ -555,11 +555,15 @@ jobs:
       # Download coverage artifact and process
       # ————————————————————————————————————————————————————————————————
       - name: 📥 Download coverage artifact
-        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+        uses: ./.github/actions/download-artifact-resilient
         with:
-          name: coverage-data
+          pattern: "coverage-data"
           path: ./coverage-artifacts/
-        continue-on-error: true
+          merge-multiple: false
+          max-retries: ${{ env.ARTIFACT_DOWNLOAD_RETRIES }}
+          retry-delay: ${{ env.ARTIFACT_DOWNLOAD_RETRY_DELAY }}
+          timeout: ${{ env.ARTIFACT_DOWNLOAD_TIMEOUT }}
+          continue-on-error: ${{ env.ARTIFACT_DOWNLOAD_CONTINUE_ON_ERROR }}
       - name: 📊 Process coverage data
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT_TOKEN != '' && secrets.GH_PAT_TOKEN || secrets.GITHUB_TOKEN }}
@@ -676,14 +680,32 @@ jobs:
           BADGE_GENERATED=false
           PAGES_DEPLOYED=false
 
-          # Extract coverage percentage from coverage.html or coverage.out
-          if [ -f "$OUTPUT_DIR/coverage.html" ]; then
-            COVERAGE_PERCENTAGE=$(grep -o 'coverage: [0-9.]*%' "$OUTPUT_DIR/coverage.html" | head -1 | grep -o '[0-9.]*' || echo "0")
-            echo "📈 Extracted coverage percentage from HTML: ${COVERAGE_PERCENTAGE}%"
-          elif [ -f "$COVERAGE_FILE" ]; then
+          # Calculate coverage percentage from coverage file first (more accurate)
+          if [ -f "$COVERAGE_FILE" ]; then
             # Calculate coverage from .out file using go tool cover
             COVERAGE_PERCENTAGE=$(go tool cover -func="$COVERAGE_FILE" | tail -1 | awk '{print $3}' | sed 's/%//' || echo "0")
             echo "📈 Calculated coverage percentage from profile: ${COVERAGE_PERCENTAGE}%"
+
+            # Validate result - if we get 0% but have coverage data, try HTML fallback
+            if [[ "$COVERAGE_PERCENTAGE" == "0" ]] && [[ -s "$COVERAGE_FILE" ]]; then
+              COVERAGE_LINES=$(wc -l < "$COVERAGE_FILE" || echo "0")
+              if [[ $COVERAGE_LINES -gt 1 ]]; then
+                echo "⚠️ Got 0% coverage despite $COVERAGE_LINES lines in coverage file - trying HTML fallback"
+                if [ -f "$OUTPUT_DIR/coverage.html" ]; then
+                  HTML_COVERAGE=$(grep -io 'coverage: [0-9.]*%' "$OUTPUT_DIR/coverage.html" | head -1 | grep -o '[0-9.]*' || echo "0")
+                  if [[ "$HTML_COVERAGE" != "0" ]]; then
+                    COVERAGE_PERCENTAGE="$HTML_COVERAGE"
+                    echo "📈 Used HTML fallback coverage: ${COVERAGE_PERCENTAGE}%"
+                  else
+                    echo "⚠️ HTML also shows 0% - this may indicate a go-coverage tool issue"
+                  fi
+                fi
+              fi
+            fi
+          elif [ -f "$OUTPUT_DIR/coverage.html" ]; then
+            # Fallback: Extract coverage percentage from HTML if no profile file
+            COVERAGE_PERCENTAGE=$(grep -io 'coverage: [0-9.]*%' "$OUTPUT_DIR/coverage.html" | head -1 | grep -o '[0-9.]*' || echo "0")
+            echo "📈 Extracted coverage percentage from HTML (fallback): ${COVERAGE_PERCENTAGE}%"
           fi
 
           # Count processed files from coverage output
@@ -2182,25 +2204,26 @@ jobs:
             GOBUILD_SIZE=$(du -sh "$HOME/.cache/go-build" 2>/dev/null | cut -f1 || echo "0B")
           fi
 
-          # Create cache statistics JSON
-          echo '{' > "cache-stats-coverage.json"
-          echo '  "os": "${{ inputs.primary-runner }}",' >> "cache-stats-coverage.json"
-          echo '  "go_version": "${{ env.GO_PRIMARY_VERSION }}",' >> "cache-stats-coverage.json"
-          echo "  \"gomod_cache_hit\": \"$GOMOD_HIT\"," >> "cache-stats-coverage.json"
-          echo "  \"gobuild_cache_hit\": \"$GOBUILD_HIT\"," >> "cache-stats-coverage.json"
-          echo "  \"cache_size_gomod\": \"$GOMOD_SIZE\"," >> "cache-stats-coverage.json"
-          echo "  \"cache_size_gobuild\": \"$GOBUILD_SIZE\"," >> "cache-stats-coverage.json"
-          echo '  "workflow": "coverage",' >> "cache-stats-coverage.json"
-          echo '  "job_name": "generate-coverage-report",' >> "cache-stats-coverage.json"
-          echo "  \"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"" >> "cache-stats-coverage.json"
-          echo '}' >> "cache-stats-coverage.json"
-
-          echo "📊 Cache statistics collected"
+          echo "📊 Cache statistics will be collected by standardized action"
 
       # ————————————————————————————————————————————————————————————————
-      # Upload cache statistics
+      # Collect performance cache statistics using standardized action
       # ————————————————————————————————————————————————————————————————
-      - name: 📤 Upload cache statistics
+      - name: 📊 Collect performance cache statistics
+        uses: ./.github/actions/collect-cache-stats
+        with:
+          workflow-name: coverage
+          job-name: generate-coverage-report
+          os: ${{ inputs.primary-runner }}
+          go-version: ${{ env.GO_PRIMARY_VERSION }}
+          cache-prefix: cache-stats
+          gomod-cache-hit: ${{ steps.setup-go-coverage.outputs.module-cache-hit }}
+          gobuild-cache-hit: ${{ steps.setup-go-coverage.outputs.build-cache-hit }}
+
+      # ————————————————————————————————————————————————————————————————
+      # Upload performance cache statistics
+      # ————————————————————————————————————————————————————————————————
+      - name: 📤 Upload performance cache statistics
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
@@ -2284,10 +2307,15 @@ jobs:
       # Download coverage artifact
       # ————————————————————————————————————————————————————————————————
       - name: 📥 Download coverage artifact
-        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+        uses: ./.github/actions/download-artifact-resilient
         with:
-          name: coverage-data
+          pattern: "coverage-data"
           path: ./
+          merge-multiple: false
+          max-retries: ${{ env.ARTIFACT_DOWNLOAD_RETRIES }}
+          retry-delay: ${{ env.ARTIFACT_DOWNLOAD_RETRY_DELAY }}
+          timeout: ${{ env.ARTIFACT_DOWNLOAD_TIMEOUT }}
+          continue-on-error: ${{ env.ARTIFACT_DOWNLOAD_CONTINUE_ON_ERROR }}
 
       - name: 🔍 Verify coverage file
         run: |

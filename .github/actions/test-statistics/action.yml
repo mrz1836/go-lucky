@@ -151,12 +151,12 @@ runs:
             echo "$LOC_OUTPUT"
             echo "📋 Parsing LOC data..."
 
-            # Extract numbers from magex metrics:loc output - improved parsing
-            # Format: "| Test Files | 71,476      | 2025-08-28 |" -> extract field 3, trim spaces and commas
-            LOC_TEST_FILES=$(echo "$LOC_OUTPUT" | grep "Test Files" | awk -F'|' '{print $3}' | tr -d ' ,' || echo "")
-            LOC_GO_FILES=$(echo "$LOC_OUTPUT" | grep "Go Files" | awk -F'|' '{print $3}' | tr -d ' ,' || echo "")
-            # Format: "✅ Total lines of code: 93,418" -> extract last field after colon
-            LOC_TOTAL=$(echo "$LOC_OUTPUT" | grep "Total lines of code:" | awk -F':' '{print $2}' | tr -d ' ,' || echo "")
+            # Extract numbers from magex metrics:loc output - preserve commas for display
+            # Format: "| Test Files | 71,476      | 2025-08-28 |" -> extract field 3, trim spaces but keep commas
+            LOC_TEST_FILES=$(echo "$LOC_OUTPUT" | grep "Test Files" | awk -F'|' '{print $3}' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' || echo "")
+            LOC_GO_FILES=$(echo "$LOC_OUTPUT" | grep "Go Files" | awk -F'|' '{print $3}' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' || echo "")
+            # Format: "✅ Total lines of code: 93,418" -> extract last field after colon, preserve commas
+            LOC_TOTAL=$(echo "$LOC_OUTPUT" | grep "Total lines of code:" | awk -F':' '{print $2}' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//' || echo "")
 
             echo "📊 Parsed values:"
             echo "  - Test Files: '$LOC_TEST_FILES'"
