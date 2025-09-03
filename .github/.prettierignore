@@ -61,7 +61,6 @@ yarn.lock
 *.md
 LICENSE
 CHANGELOG
-CITATION.cff
 
 # Build & lint configs
 **/.golangci.json
