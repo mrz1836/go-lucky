@@ -78,6 +78,24 @@ jobs:
           done
 
       # ————————————————————————————————————————————————————————————————
+      # Detect if this is a release build (tag)
+      # ————————————————————————————————————————————————————————————————
+      - name: 🏷️ Detect Release Build
+        run: |
+          # Detect if this is a release build
+          IS_RELEASE_BUILD=false
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            IS_RELEASE_BUILD=true
+            TAG_NAME="${GITHUB_REF#refs/tags/}"
+            echo "📦 Detected release build (tag: $TAG_NAME)"
+            echo "IS_RELEASE_BUILD=true" >> $GITHUB_ENV
+            echo "RELEASE_TAG=$TAG_NAME" >> $GITHUB_ENV
+          else
+            echo "🔄 Regular build (non-release)"
+            echo "IS_RELEASE_BUILD=false" >> $GITHUB_ENV
+          fi
+
+      # ————————————————————————————————————————————————————————————————
       # Download specific artifacts needed for statistics processing
       # ————————————————————————————————————————————————————————————————
       - name: 📥 Download test statistics
@@ -459,7 +477,18 @@ jobs:
               echo "### 📈 Code Coverage Status"
               echo "| Status | Details |"
               echo "|--------|---------|"
-              echo "| **Coverage** | ⚠️ No coverage data available - check job logs |"
+
+              # Show different message for release builds vs regular builds
+              if [[ "${IS_RELEASE_BUILD:-false}" == "true" ]]; then
+                echo "| **Coverage** | 📦 Coverage analysis skipped for release builds |"
+                echo "| **Reason** | Coverage processing is disabled during releases to optimize build time |"
+                if [[ -n "${RELEASE_TAG:-}" ]]; then
+                  echo "| **Release Tag** | \`${RELEASE_TAG}\` |"
+                fi
+              else
+                echo "| **Coverage** | ⚠️ No coverage data available - check job logs |"
+              fi
+
               echo "| **Threshold** | ${{ env.GO_COVERAGE_THRESHOLD }}% minimum |"
               echo "| **Badge Style** | ${{ env.GO_COVERAGE_BADGE_STYLE }} |"
               echo "| **PR Comments** | $([ "${{ env.GO_COVERAGE_POST_COMMENTS }}" == "true" ] && echo "✅ Enabled" || echo "❌ Disabled") |"
