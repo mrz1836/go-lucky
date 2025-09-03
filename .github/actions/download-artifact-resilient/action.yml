@@ -122,11 +122,9 @@ runs:
           # Attempt download with timeout
           echo "⏳ Downloading with ${DOWNLOAD_TIMEOUT}s timeout..."
 
-          if [ "$MERGE_MULTIPLE" = "true" ]; then
-            DOWNLOAD_CMD="gh run download ${{ github.run_id }} --pattern \"$ARTIFACT_PATTERN\" --dir \"$ARTIFACT_PATH\""
-          else
-            DOWNLOAD_CMD="gh run download ${{ github.run_id }} --name \"$ARTIFACT_PATTERN\" --dir \"$ARTIFACT_PATH\""
-          fi
+          # Always use --pattern flag since "coverage-data" is treated as a pattern
+          # Using --name with patterns causes gh CLI to download all artifacts when no exact match found
+          DOWNLOAD_CMD="gh run download ${{ github.run_id }} --pattern \"$ARTIFACT_PATTERN\" --dir \"$ARTIFACT_PATH\""
 
           if timeout "$DOWNLOAD_TIMEOUT" bash -c "$DOWNLOAD_CMD"; then
             echo "✅ Successfully downloaded artifacts on attempt $ATTEMPT_NUM"
@@ -134,12 +132,17 @@ runs:
             ARTIFACTS_FOUND=$AVAILABLE_ARTIFACTS
 
             # Verify downloaded files
-            if [ -d "$ARTIFACT_PATH" ] && [ "$(find "$ARTIFACT_PATH" -type f | wc -l)" -gt 0 ]; then
+            if [ -d "$ARTIFACT_PATH" ] && [ "$(find "$ARTIFACT_PATH" -type f 2>/dev/null | wc -l)" -gt 0 ]; then
               echo "📁 Downloaded files:"
-              find "$ARTIFACT_PATH" -type f | head -10 | sed 's/^/  • /'
-              if [ "$(find "$ARTIFACT_PATH" -type f | wc -l)" -gt 10 ]; then
-                echo "  • ... and $(($(find "$ARTIFACT_PATH" -type f | wc -l) - 10)) more files"
+              # Use a more robust approach to avoid broken pipe issues
+              TEMP_FILE_LIST=$(mktemp)
+              find "$ARTIFACT_PATH" -type f 2>/dev/null > "$TEMP_FILE_LIST"
+              TOTAL_FILES=$(wc -l < "$TEMP_FILE_LIST")
+              head -10 "$TEMP_FILE_LIST" | sed 's/^/  • /'
+              if [ "$TOTAL_FILES" -gt 10 ]; then
+                echo "  • ... and $((TOTAL_FILES - 10)) more files"
               fi
+              rm -f "$TEMP_FILE_LIST"
             else
               echo "⚠️ Download completed but no files found in destination"
             fi

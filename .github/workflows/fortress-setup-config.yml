@@ -127,6 +127,12 @@ on:
       pre-commit-enabled:
         description: "Whether pre-commit checks are enabled"
         value: ${{ jobs.setup-config.outputs.pre-commit-enabled }}
+      gofortress-version:
+        description: "GoFortress workflow system version"
+        value: ${{ jobs.setup-config.outputs.gofortress-version }}
+      gofortress-released:
+        description: "GoFortress release date"
+        value: ${{ jobs.setup-config.outputs.gofortress-released }}
 
 # Security: Restrictive default permissions with job-level overrides for least privilege access
 permissions:
@@ -165,6 +171,8 @@ jobs:
       test-matrix: ${{ steps.matrix.outputs.matrix }}
       warm-cache-matrix: ${{ steps.matrix.outputs.matrix }}
       pre-commit-enabled: ${{ steps.config.outputs.pre-commit-enabled }}
+      gofortress-version: ${{ steps.extract-version.outputs.version }}
+      gofortress-released: ${{ steps.extract-version.outputs.released }}
 
     steps:
       # ————————————————————————————————————————————————————————————————
@@ -206,6 +214,49 @@ jobs:
             .mage.yaml
             go.mod
             go.sum
+            .github/workflows/fortress.yml
+
+      # ————————————————————————————————————————————————————————————————
+      # Extract GoFortress version metadata from fortress.yml
+      # ————————————————————————————————————————————————————————————————
+      - name: 📋 Extract GoFortress Version
+        id: extract-version
+        run: |
+          # Extract version metadata from the fortress.yml file
+          FORTRESS_FILE=".github/workflows/fortress.yml"
+
+          echo "🔍 Looking for GoFortress version in: $FORTRESS_FILE"
+
+          if [ -f "$FORTRESS_FILE" ]; then
+            echo "✅ Found fortress.yml file"
+
+            # Extract version information from the main header (format: #  Version: X.Y.Z | Released: YYYY-MM-DD)
+            VERSION_LINE=$(grep "#  Version:" "$FORTRESS_FILE" | head -1)
+
+            if [ -n "$VERSION_LINE" ]; then
+              FORTRESS_VERSION=$(echo "$VERSION_LINE" | sed 's/.*Version: //' | sed 's/ |.*//')
+              FORTRESS_RELEASED=$(echo "$VERSION_LINE" | sed 's/.*Released: //' | tr -d ' ')
+
+              echo "🏰 GoFortress Version: $FORTRESS_VERSION"
+              echo "📅 Released: $FORTRESS_RELEASED"
+
+              # Set outputs for use in other steps
+              echo "version=$FORTRESS_VERSION" >> $GITHUB_OUTPUT
+              echo "released=$FORTRESS_RELEASED" >> $GITHUB_OUTPUT
+            else
+              echo "⚠️ Version line not found in fortress.yml"
+              echo "version=unknown" >> $GITHUB_OUTPUT
+              echo "released=unknown" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "❌ fortress.yml not found at $FORTRESS_FILE"
+            echo "📂 Current directory contents:"
+            ls -la
+            echo "📂 .github/workflows/ contents:"
+            ls -la .github/workflows/ || echo "Directory not found"
+            echo "version=unknown" >> $GITHUB_OUTPUT
+            echo "released=unknown" >> $GITHUB_OUTPUT
+          fi
 
       # ————————————————————————————————————————————————————————————————
       # Get Go versions and set up the matrix
@@ -397,6 +448,17 @@ jobs:
           echo "# 🏰 GoFortress CI Configuration Report" >> $GITHUB_STEP_SUMMARY
           echo "_Generated at: ${SUMMARY_TIME}_" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## 🎯 GoFortress System Information" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **System Version** | \`${{ steps.extract-version.outputs.version }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Release Date** | ${{ steps.extract-version.outputs.released }} |" >> $GITHUB_STEP_SUMMARY
+
+          # Count all fortress workflow files (including main fortress.yml)
+          FORTRESS_FILES=$(find .github/workflows -name "fortress*.yml" | wc -l | tr -d ' ')
+          echo "| **Workflow Components** | ${FORTRESS_FILES} fortress modules |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "<br><br>" >> $GITHUB_STEP_SUMMARY
 
           # Workflow Trigger Information
           echo "## 🎯 Workflow Trigger" >> $GITHUB_STEP_SUMMARY

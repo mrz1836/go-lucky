@@ -1,6 +1,8 @@
 # ------------------------------------------------------------------------------------
 #  🏰 GoFortress - Enterprise-grade CI/CD fortress for Go applications
 #
+#  Version: 1.1.0 | Released: 2025-06-01
+#
 #  Built Strong. Tested Harder.
 #
 #  GoFortress transforms your Go development pipeline into an impenetrable fortress
@@ -401,3 +403,5 @@ jobs:
       test-magex-result: ${{ needs.test-magex.result }}
       test-matrix: ${{ needs.setup.outputs.test-matrix }}
       test-suite-result: ${{ needs.test-suite.result }}
+      gofortress-version: ${{ needs.setup.outputs.gofortress-version }}
+      gofortress-released: ${{ needs.setup.outputs.gofortress-released }}

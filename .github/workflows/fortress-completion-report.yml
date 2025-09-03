@@ -75,6 +75,16 @@ on:
         description: "Primary runner OS"
         required: true
         type: string
+      gofortress-version:
+        description: "GoFortress workflow system version"
+        required: false
+        type: string
+        default: "unknown"
+      gofortress-released:
+        description: "GoFortress release date"
+        required: false
+        type: string
+        default: "unknown"
 
 # Security: Restrictive default permissions with job-level overrides for least privilege access
 permissions:
