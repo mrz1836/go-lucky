@@ -27,7 +27,7 @@ description: "Install and cache GoReleaser binary with automatic PATH management
 
 inputs:
   goreleaser-version:
-    description: "GoReleaser version to install (e.g., v2.11.2)"
+    description: "GoReleaser version to install (e.g., vX.Y.Z)"
     required: true
   runner-os:
     description: "Runner OS for cache key (e.g., ubuntu-latest, windows-latest)"
