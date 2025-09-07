@@ -1,7 +1,7 @@
 //go:build mage
 
-// Magefile for Go-Lucky Lottery Analyzer
-package main
+// Package magefiles provides build automation tasks for the Go-Lucky Lottery Analyzer.
+package magefiles
 
 import (
 	"fmt"
@@ -20,6 +20,11 @@ const (
 	coverageFile = "coverage.out"
 	testTimeout  = "30s"
 )
+
+// logInfo prints informational messages to stdout
+func logInfo(msg string) {
+	_, _ = fmt.Fprintln(os.Stdout, msg)
+}
 
 // Build namespace for build-related tasks
 type Build mg.Namespace
@@ -77,7 +82,7 @@ func Benchmark() error {
 
 // Clean removes build artifacts and generated files
 func Clean() error {
-	fmt.Println("🧹 Cleaning up...")
+	logInfo("🧹 Cleaning up...")
 
 	// Remove directories
 	dirs := []string{"bin/"}
@@ -123,15 +128,15 @@ func Clean() error {
 		}
 	}
 
-	fmt.Println("✅ Cleanup complete")
+	logInfo("✅ Cleanup complete")
 	return nil
 }
 
 // Build Commands
 
-// (Build) Dev builds the development version of the analyzer
+// Dev builds the development version of the analyzer
 func (Build) Dev() error {
-	fmt.Println("🔧 Building development version...")
+	logInfo("🔧 Building development version...")
 
 	// Ensure bin directory exists
 	if err := os.MkdirAll("bin", 0o750); err != nil {
@@ -142,43 +147,43 @@ func (Build) Dev() error {
 	return sh.RunV("magex", "build:dev")
 }
 
-// (Build) Default builds the default version
+// Default builds the default version
 func (Build) Default() error {
 	return sh.RunV("magex", "build:default")
 }
 
-// (Build) All builds all platforms
+// All builds all platforms
 func (Build) All() error {
 	return sh.RunV("magex", "build:all")
 }
 
 // Analysis Commands
 
-// (Analysis) Full runs complete analysis with cosmic correlations (RECOMMENDED)
+// Full runs complete analysis with cosmic correlations (RECOMMENDED)
 func (Analysis) Full() error {
 	mg.Deps(Build{}.Dev)
 
-	fmt.Println("╔══════════════════════════════════════════════════════════════╗")
-	fmt.Println("║        🌌 RUNNING FULL COSMIC LOTTERY ANALYSIS 🌌            ║")
-	fmt.Println("╚══════════════════════════════════════════════════════════════╝")
-	fmt.Println("")
+	logInfo("╔══════════════════════════════════════════════════════════════╗")
+	logInfo("║        🌌 RUNNING FULL COSMIC LOTTERY ANALYSIS 🌌            ║")
+	logInfo("╚══════════════════════════════════════════════════════════════╝")
+	logInfo("")
 
 	return runAnalyzer("--cosmic")
 }
 
-// (Analysis) Simple runs simple analysis summary
+// Simple runs simple analysis summary
 func (Analysis) Simple() error {
 	mg.Deps(Build{}.Dev)
 	return runAnalyzer("--simple")
 }
 
-// (Analysis) Statistical runs detailed statistical analysis
+// Statistical runs detailed statistical analysis
 func (Analysis) Statistical() error {
 	mg.Deps(Build{}.Dev)
 	return runAnalyzer("--statistical")
 }
 
-// (Analysis) Cosmic runs cosmic correlation analysis only
+// Cosmic runs cosmic correlation analysis only
 func (Analysis) Cosmic() error {
 	mg.Deps(Build{}.Dev)
 	return runAnalyzer("--cosmic")
@@ -186,38 +191,38 @@ func (Analysis) Cosmic() error {
 
 // Export Commands
 
-// (Export) JSON exports full analysis to JSON file
+// JSON exports full analysis to JSON file
 func (Export) JSON() error {
 	mg.Deps(Build{}.Dev)
 
-	fmt.Println("📊 Exporting analysis to JSON...")
+	logInfo("📊 Exporting analysis to JSON...")
 	if err := runAnalyzer("--cosmic", "--export-json"); err != nil {
 		return err
 	}
-	fmt.Println("✅ Export complete! Check lottery_analysis_*.json")
+	logInfo("✅ Export complete! Check lottery_analysis_*.json")
 	return nil
 }
 
-// (Export) CSV exports analysis data to CSV file
+// CSV exports analysis data to CSV file
 func (Export) CSV() error {
 	mg.Deps(Build{}.Dev)
 
-	fmt.Println("📊 Exporting analysis to CSV...")
+	logInfo("📊 Exporting analysis to CSV...")
 	if err := runAnalyzer("--cosmic", "--export-csv"); err != nil {
 		return err
 	}
-	fmt.Println("✅ Export complete! Check lottery_analysis_*.csv")
+	logInfo("✅ Export complete! Check lottery_analysis_*.csv")
 	return nil
 }
 
 // Quick Analysis Commands
 
-// (Quick) LuckyPicks generates 5 different analysis-based number sets
+// LuckyPicks generates 5 different analysis-based number sets
 func (Quick) LuckyPicks() error {
 	mg.Deps(Build{}.Dev)
 
-	fmt.Println("🎰 Generating Lucky Picks...")
-	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+	logInfo("🎰 Generating Lucky Picks...")
+	logInfo("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
 	output, err := runAnalyzerWithOutput("--simple")
 	if err != nil {
@@ -234,7 +239,7 @@ func (Quick) LuckyPicks() error {
 			lineCount = 0
 		}
 		if printSection {
-			fmt.Println(line)
+			logInfo(line)
 			lineCount++
 			if lineCount > 10 {
 				break
@@ -242,24 +247,24 @@ func (Quick) LuckyPicks() error {
 		}
 	}
 
-	fmt.Println("")
-	fmt.Println("🌌 Cosmic Pick:")
+	logInfo("")
+	logInfo("🌌 Cosmic Pick:")
 	for _, line := range lines {
 		if strings.Contains(line, "COSMIC PICK:") {
-			fmt.Println(line)
+			logInfo(line)
 			break
 		}
 	}
-	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+	logInfo("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
 	return nil
 }
 
-// (Quick) HotNumbers shows current hot numbers
+// HotNumbers shows current hot numbers
 func (Quick) HotNumbers() error {
 	mg.Deps(Build{}.Dev)
 
-	fmt.Println("🔥 Current Hot Numbers:")
+	logInfo("🔥 Current Hot Numbers:")
 	output, err := runAnalyzerWithOutput("--simple")
 	if err != nil {
 		return err
@@ -275,7 +280,7 @@ func (Quick) HotNumbers() error {
 			lineCount = 0
 		}
 		if printSection {
-			fmt.Println(line)
+			logInfo(line)
 			lineCount++
 			if lineCount > 7 {
 				break
@@ -286,11 +291,11 @@ func (Quick) HotNumbers() error {
 	return nil
 }
 
-// (Quick) Overdue shows most overdue numbers
+// Overdue shows most overdue numbers
 func (Quick) Overdue() error {
 	mg.Deps(Build{}.Dev)
 
-	fmt.Println("⏰ Most Overdue Numbers:")
+	logInfo("⏰ Most Overdue Numbers:")
 	output, err := runAnalyzerWithOutput("--simple")
 	if err != nil {
 		return err
@@ -306,7 +311,7 @@ func (Quick) Overdue() error {
 			lineCount = 0
 		}
 		if printSection {
-			fmt.Println(line)
+			logInfo(line)
 			lineCount++
 			if lineCount > 7 {
 				break
@@ -319,41 +324,41 @@ func (Quick) Overdue() error {
 
 // Fun Commands
 
-// (Fun) CosmicWisdom displays cosmic lottery wisdom
+// CosmicWisdom displays cosmic lottery wisdom
 func (Fun) CosmicWisdom() error {
-	fmt.Println("")
-	fmt.Println("✨ ═══════════════════════════════════════════════════════ ✨")
-	fmt.Println("   🌙 The moon influences tides, not lottery numbers! 🌙")
-	fmt.Println("   ☀️  Solar flares can't burn through randomness! ☀️")
-	fmt.Println("   🌟 Every number has exactly 1/48 chance! 🌟")
-	fmt.Println("   🎲 Play for fun, not for cosmic fortune! 🎲")
-	fmt.Println("✨ ═══════════════════════════════════════════════════════ ✨")
-	fmt.Println("")
+	logInfo("")
+	logInfo("✨ ═══════════════════════════════════════════════════════ ✨")
+	logInfo("   🌙 The moon influences tides, not lottery numbers! 🌙")
+	logInfo("   ☀️  Solar flares can't burn through randomness! ☀️")
+	logInfo("   🌟 Every number has exactly 1/48 chance! 🌟")
+	logInfo("   🎲 Play for fun, not for cosmic fortune! 🎲")
+	logInfo("✨ ═══════════════════════════════════════════════════════ ✨")
+	logInfo("")
 	return nil
 }
 
-// (Fun) Fortune gets your lottery fortune
+// Fortune gets your lottery fortune
 func (Fun) Fortune() error {
 	mg.Deps(Build{}.Dev)
 
-	fmt.Println("🔮 Your Lottery Fortune:")
-	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+	logInfo("🔮 Your Lottery Fortune:")
+	logInfo("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 
 	output, err := runAnalyzerWithOutput("--simple")
 	if err != nil {
-		fmt.Println("The stars are silent today...")
+		logInfo("The stars are silent today...")
 	} else {
 		lines := strings.Split(output, "\n")
 		for _, line := range lines {
 			if strings.Contains(line, "COSMIC PICK:") {
-				fmt.Println(line)
+				logInfo(line)
 				break
 			}
 		}
 	}
 
-	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-	fmt.Println("Remember: Fortune favors the prepared... wallet! 💸")
+	logInfo("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+	logInfo("Remember: Fortune favors the prepared... wallet! 💸")
 	return nil
 }
 
