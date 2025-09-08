@@ -19,7 +19,7 @@
   "author": "mrz1836",
   "license": "MIT",
   "devDependencies": {
-    "serve": "^14.2.4"
+    "serve": "^14.2.5"
   },
   "overrides": {
     "on-headers": "1.1.0"
