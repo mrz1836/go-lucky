@@ -42,7 +42,7 @@ builds:
 archives:
   - id: go-lucky
     name_template: >-
-      {{- .ProjectName }}_ {{- .Version }}_ {{- .Os }}_ {{- .Arch }}
+      {{- .ProjectName }}_{{- .Version }}_{{- .Os }}_{{- .Arch }}
     files:
       - LICENSE
       - README.md
