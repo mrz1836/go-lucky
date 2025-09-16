@@ -1,32 +1,32 @@
 {
-  "name": "go-lucky-lottery-analyzer",
-  "version": "1.0.0",
-  "description": "A sophisticated statistical analysis tool for NC Lucky for Life lottery data that combines traditional statistical methods with cosmic correlation analysis.",
-  "main": "web-assets/index.html",
-  "scripts": {
-    "build": "echo 'Building static site...' && cp -r . dist/ 2>/dev/null || true",
-    "start": "npx serve web-assets -p 3000",
-    "dev": "npx serve web-assets -p 3000"
-  },
-  "keywords": [
-    "lottery",
-    "analysis",
-    "statistics",
-    "cosmic",
-    "correlation",
-    "nc-lucky-for-life"
-  ],
-  "author": "mrz1836",
-  "license": "MIT",
-  "devDependencies": {
-    "serve": "^14.2.5"
-  },
-  "overrides": {
-    "on-headers": "1.1.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/mrz1836/go-lucky.git"
-  },
-  "homepage": "https://github.com/mrz1836/go-lucky#readme"
+    "author": "mrz1836",
+    "description": "A sophisticated statistical analysis tool for NC Lucky for Life lottery data that combines traditional statistical methods with cosmic correlation analysis.",
+    "devDependencies": {
+        "serve": "^14.2.5"
+    },
+    "homepage": "https://github.com/mrz1836/go-lucky#readme",
+    "keywords": [
+        "lottery",
+        "analysis",
+        "statistics",
+        "cosmic",
+        "correlation",
+        "nc-lucky-for-life"
+    ],
+    "license": "MIT",
+    "main": "web-assets/index.html",
+    "name": "go-lucky-lottery-analyzer",
+    "overrides": {
+        "on-headers": "1.1.0"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/mrz1836/go-lucky.git"
+    },
+    "scripts": {
+        "build": "echo 'Building static site...' && cp -r . dist/ 2>/dev/null || true",
+        "dev": "npx serve web-assets -p 3000",
+        "start": "npx serve web-assets -p 3000"
+    },
+    "version": "1.0.0"
 }
