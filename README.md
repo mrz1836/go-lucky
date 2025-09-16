@@ -89,7 +89,7 @@
 Get up and running with go-lucky in under 3 minutes!
 
 ### Prerequisites
-- [Go 1.21+](https://golang.org/doc/install) installed
+- [Go 1.24+](https://golang.org/doc/install) installed
 - [MAGE-X](https://github.com/mrz1836/mage-x) installed (`go install github.com/mrz1836/mage-x@latest`)
 - Historical lottery data file (included: `data/lucky-numbers-history.csv`)
 
@@ -162,12 +162,12 @@ magex quick:luckypicks
 
 ### What Makes It Unique
 
-✅ **Comprehensive Analysis** - Frequency, gaps, patterns, combinations, randomness verification
-✅ **Cosmic Research** - Moon phases, solar activity, weather, planetary positions
-✅ **Educational Value** - Teaches statistics, probability, and correlation vs causation
-✅ **Multiple Strategies** - 6 different number selection approaches
-✅ **Performance Optimized** - Analyzes 2000+ drawings in ~1 second
-✅ **Export Capabilities** - JSON/CSV output for further analysis
+- **Comprehensive Analysis** - Frequency, gaps, patterns, combinations, randomness verification
+- **Cosmic Research** - Moon phases, solar activity, weather, planetary positions
+- **Educational Value** - Teaches statistics, probability, and correlation vs causation
+- **Multiple Strategies** - 6 different number selection approaches
+- **Performance Optimized** - Analyzes 2000+ drawings in ~1 second
+- **Export Capabilities** - JSON/CSV output for further analysis
 
 <br/>
 

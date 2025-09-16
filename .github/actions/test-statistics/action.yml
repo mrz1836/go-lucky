@@ -20,7 +20,7 @@ description: "Calculate comprehensive test statistics and metrics for test runs"
 
 inputs:
   matrix-name:
-    description: 'Matrix job name (e.g., "ubuntu-latest go1.21")'
+    description: 'Matrix job name (e.g., "ubuntu-latest go1.24")'
     required: true
   matrix-os:
     description: "Operating system from matrix"
