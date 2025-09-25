@@ -734,7 +734,7 @@ func findMaxFrequency(freqMap map[int]int) (number, frequency int) {
 			frequency = freq
 		}
 	}
-	return
+	return number, frequency
 }
 
 func getTotalFrequency(freqMap map[int]int) int {
