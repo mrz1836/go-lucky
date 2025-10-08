@@ -1,0 +1,17 @@
+{
+    "tasks": [
+        {
+            "command": "make",
+            "group": {
+                "isDefault": true,
+                "kind": "build"
+            },
+            "label": "make",
+            "problemMatcher": [
+                "$go"
+            ],
+            "type": "shell"
+        }
+    ],
+    "version": "2.0.0"
+}

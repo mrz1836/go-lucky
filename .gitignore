@@ -32,7 +32,6 @@ lottery_analyzer
 go-lucky
 
 # IDE files
-.vscode/
 .idea/
 *.swp
 *.swo
