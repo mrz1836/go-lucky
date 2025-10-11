@@ -8,7 +8,7 @@
             ],
             "settings": {
                 "editor.codeActionsOnSave": {
-                    "source.organizeImports": true
+                    "source.organizeImports": "explicit"
                 },
                 "editor.formatOnSave": true,
                 "go.lintTool": "golangci-lint",
@@ -29,6 +29,7 @@
         "type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock"
     ],
     "name": "go-lucky dev container",
+    "postStartCommand": "go install github.com/magefile/mage/cmd/magex@latest",
     "postCreateCommand": "magex lint && magex vet && magex test",
     "remoteUser": "vscode",
     "runArgs": [
