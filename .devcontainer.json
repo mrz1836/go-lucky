@@ -29,8 +29,8 @@
         "type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock"
     ],
     "name": "go-lucky dev container",
-    "postStartCommand": "go install github.com/magefile/mage/cmd/magex@latest",
     "postCreateCommand": "magex lint && magex vet && magex test",
+    "postStartCommand": "go install github.com/mrz1836/mage-x/cmd/magex@latest",
     "remoteUser": "vscode",
     "runArgs": [
         "--cap-drop=ALL",
