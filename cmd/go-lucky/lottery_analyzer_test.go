@@ -1890,6 +1890,7 @@ func parseCLIArgs(args []string) *AnalysisConfig {
 	// Parse command line arguments
 	if len(args) > 1 {
 		for i := 1; i < len(args); i++ {
+			// #nosec G602 -- loop condition ensures i is always in range
 			switch args[i] {
 			case "--simple":
 				config.OutputMode = "simple"
