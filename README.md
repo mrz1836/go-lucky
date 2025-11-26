@@ -1,87 +1,99 @@
-# 🌌 Go-Lucky: NC Lucky for Life Lottery Analyzer
-> Advanced Statistical Analysis Tool with Cosmic Correlation Research for Educational Demon of Randomness
+<div align="center">
 
-<table>
-  <thead>
-    <tr>
-      <th>Build&nbsp;&amp;&nbsp;Quality</th>
-      <th>Documentation&nbsp;&amp;&nbsp;Meta</th>
-      <th>Statistics&nbsp;&amp;&nbsp;Performance</th>
-      <th>Community</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td valign="top" align="left">
-        <a href="https://github.com/mrz1836/go-lucky/releases">
-          <img src="https://img.shields.io/github/release-pre/mrz1836/go-lucky?logo=github&style=flat&v=1" alt="Latest Release">
-        </a><br/>
-        <a href="https://github.com/mrz1836/go-lucky/actions">
-          <img src="https://img.shields.io/github/actions/workflow/status/mrz1836/go-lucky/fortress.yml?branch=master&logo=github&style=flat" alt="Build Status">
-        </a><br/>
-        <a href="https://goreportcard.com/report/github.com/mrz1836/go-lucky">
-          <img src="https://goreportcard.com/badge/github.com/mrz1836/go-lucky?style=flat&v=1" alt="Go Report Card">
-        </a><br/>
-        <a href="https://github.com/mrz1836/go-lucky/commits/master">
-          <img src="https://img.shields.io/github/last-commit/mrz1836/go-lucky?style=flat&logo=clockify&logoColor=white" alt="Last commit">
-        </a>
-      </td>
-      <td valign="top" align="left">
-        <a href="https://golang.org/">
-          <img src="https://img.shields.io/github/go-mod/go-version/mrz1836/go-lucky?style=flat" alt="Go version">
-        </a><br/>
-        <a href="https://pkg.go.dev/github.com/mrz1836/go-lucky">
-          <img src="https://pkg.go.dev/badge/github.com/mrz1836/go-lucky.svg?style=flat" alt="Go docs">
-        </a><br/>
-        <a href="LICENSE">
-          <img src="https://img.shields.io/github/license/mrz1836/go-lucky.svg?style=flat&v=1" alt="License">
-        </a><br/>
-        <a href="https://github.com/mrz1836/mage-x">
-          <img src="https://img.shields.io/badge/Mage-supported-brightgreen?style=flat&logo=go&logoColor=white" alt="MAGE-X Supported">
-        </a>
-      </td>
-      <td valign="top" align="left">
-        <a href="https://app.codecov.io/gh/mrz1836/go-lucky/tree/master">
-          <img src="https://codecov.io/gh/mrz1836/go-lucky/branch/master/graph/badge.svg?style=flat" alt="Code Coverage">
-        </a><br/>
-        <img src="https://img.shields.io/badge/linter-0_issues-brightgreen?style=flat&logo=golangci-lint" alt="Linter">
-        <br/>
-        <img src="https://img.shields.io/badge/analysis-~1s-blue?style=flat&logo=stopwatch" alt="Performance">
-      </td>
-      <td valign="top" align="left">
-        <a href="https://github.com/mrz1836/go-lucky/graphs/contributors">
-          <img src="https://img.shields.io/github/contributors/mrz1836/go-lucky?style=flat&logo=contentful&logoColor=white" alt="Contributors">
-        </a><br/>
-        <a href="https://github.com/sponsors/mrz1836">
-          <img src="https://img.shields.io/badge/sponsor-MrZ-181717.svg?logo=github&style=flat" alt="Sponsor">
-        </a><br/>
-        <a href="https://mrz1818.com/?tab=tips&utm_source=github&utm_medium=sponsor-link&utm_campaign=go-lucky&utm_term=go-lucky&utm_content=go-lucky">
-          <img src="https://img.shields.io/badge/donate-bitcoin-ff9900.svg?logo=bitcoin&style=flat" alt="Donate Bitcoin">
-        </a><br/>
-        <a href="https://github.com/mrz1836/go-lucky/stargazers">
-          <img src="https://img.shields.io/github/stars/mrz1836/go-lucky?label=Please%20like%20us&style=social" alt="Stars">
-        </a>
-      </td>
-    </tr>
-  </tbody>
-</table>
+# 🌌&nbsp;&nbsp;Go-Lucky
+
+**Advanced Statistical Analysis Tool with Cosmic Correlation Research for Educational Demon of Randomness**
 
 <br/>
 
-## 🗂️ Table of Contents
-* [Quick Start](#-quick-start)
-* [How It Works](#-how-it-works)
-* [Usage Examples](#-usage-examples)
-* [Analysis Modes](#-analysis-modes)
-* [Cosmic Correlation Analysis](#-cosmic-correlation-analysis)
-* [Understanding the Output](#-understanding-the-output)
-* [Performance](#-performance)
-* [Testing & Development](#-testing--development)
-* [Mage Commands Reference](#-mage-commands-reference)
-* [Mathematical Insights](#-mathematical-insights)
-* [Contributing](#-contributing)
-* [License & Disclaimer](#-license--disclaimer)
+<a href="https://github.com/mrz1836/go-lucky/releases"><img src="https://img.shields.io/github/release-pre/mrz1836/go-lucky?include_prereleases&style=flat-square&logo=github&color=black" alt="Release"></a>
+<a href="https://golang.org/"><img src="https://img.shields.io/github/go-mod/go-version/mrz1836/go-lucky?style=flat-square&logo=go&color=00ADD8" alt="Go Version"></a>
+<a href="https://github.com/mrz1836/go-lucky/blob/master/LICENSE"><img src="https://img.shields.io/github/license/mrz1836/go-lucky?style=flat-square&color=blue" alt="License"></a>
 
+<br/>
+
+<table align="center" border="0">
+  <tr>
+    <td align="right">
+       <code>CI / CD</code> &nbsp;&nbsp;
+    </td>
+    <td align="left">
+       <a href="https://github.com/mrz1836/go-lucky/actions"><img src="https://img.shields.io/github/actions/workflow/status/mrz1836/go-lucky/fortress.yml?branch=master&label=build&logo=github&style=flat-square" alt="Build"></a>
+       <a href="https://github.com/mrz1836/go-lucky/commits/master"><img src="https://img.shields.io/github/last-commit/mrz1836/go-lucky?style=flat-square&logo=git&logoColor=white&label=last%20update" alt="Last Commit"></a>
+    </td>
+    <td align="right">
+       &nbsp;&nbsp;&nbsp;&nbsp; <code>Quality</code> &nbsp;&nbsp;
+    </td>
+    <td align="left">
+       <a href="https://goreportcard.com/report/github.com/mrz1836/go-lucky"><img src="https://goreportcard.com/badge/github.com/mrz1836/go-lucky?style=flat-square" alt="Go Report"></a>
+       <a href="https://app.codecov.io/gh/mrz1836/go-lucky/tree/master"><img src="https://codecov.io/gh/mrz1836/go-lucky/branch/master/graph/badge.svg?style=flat-square" alt="Coverage"></a>
+    </td>
+  </tr>
+
+  <tr>
+    <td align="right">
+       <code>Security</code> &nbsp;&nbsp;
+    </td>
+    <td align="left">
+       <a href="https://scorecard.dev/viewer/?uri=github.com/mrz1836/go-lucky"><img src="https://api.scorecard.dev/projects/github.com/mrz1836/go-lucky/badge?style=flat-square" alt="Scorecard"></a>
+       <a href=".github/SECURITY.md"><img src="https://img.shields.io/badge/policy-active-success?style=flat-square&logo=security&logoColor=white" alt="Security"></a>
+    </td>
+    <td align="right">
+       &nbsp;&nbsp;&nbsp;&nbsp; <code>Community</code> &nbsp;&nbsp;
+    </td>
+    <td align="left">
+       <a href="https://github.com/mrz1836/go-lucky/graphs/contributors"><img src="https://img.shields.io/github/contributors/mrz1836/go-lucky?style=flat-square&color=orange" alt="Contributors"></a>
+       <a href="https://mrz1818.com/?tab=tips&utm_source=github&utm_medium=sponsor-link&utm_campaign=go-lucky&utm_term=go-lucky&utm_content=go-lucky"><img src="https://img.shields.io/badge/donate-bitcoin-ff9900?style=flat-square&logo=bitcoin" alt="Bitcoin"></a>
+    </td>
+  </tr>
+</table>
+
+</div>
+
+<br/>
+<br/>
+
+<div align="center">
+
+### <code>Project Navigation</code>
+
+</div>
+
+<table align="center">
+  <tr>
+    <td align="center" width="33%">
+       🚀&nbsp;<a href="#-quick-start"><code>Quick&nbsp;Start</code></a>
+    </td>
+    <td align="center" width="33%">
+       💡&nbsp;<a href="#-usage-examples"><code>Usage&nbsp;Examples</code></a>
+    </td>
+    <td align="center" width="33%">
+       🔍&nbsp;<a href="#-how-it-works"><code>How&nbsp;It&nbsp;Works</code></a>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+       📊&nbsp;<a href="#-analysis-modes"><code>Analysis&nbsp;Modes</code></a>
+    </td>
+    <td align="center">
+      📚&nbsp;<a href="#-understanding-the-output"><code>Understanding&nbsp;the&nbsp;Output</code></a>
+    </td>
+    <td align="center">
+      🏎️&nbsp;<a href="#-performance"><code>Performance</code></a>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      🧪&nbsp;<a href="#-testing--development"><code>Testing&nbsp;&&nbsp;Development</code></a>
+    </td>
+    <td align="center">
+       🤝&nbsp;<a href="#-contributing"><code>Contributing</code></a>
+    </td>
+    <td align="center">
+       📝&nbsp;<a href="#-license--disclaimer"><code>License&nbsp;&&nbsp;Disclaimer</code></a>
+    </td>
+  </tr>
+</table>
 <br/>
 
 ## ⚡ Quick Start
