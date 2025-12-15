@@ -65,6 +65,7 @@ checksum:
 release:
   prerelease: "false"
   name_template: "Release v{{.Version}}"
+  replace_existing_artifacts: true
 
 # ---------------------------
 # Announce
