@@ -1016,7 +1016,7 @@ func (a *Analyzer) printDetailedAnalysis(ctx context.Context) error {
 	oddEvenSorted := make([]struct {
 		Pattern string
 		Count   int
-	}, 0)
+	}, 0, len(a.patternStats.OddEvenPatterns))
 	for pattern, count := range a.patternStats.OddEvenPatterns {
 		oddEvenSorted = append(oddEvenSorted, struct {
 			Pattern string
