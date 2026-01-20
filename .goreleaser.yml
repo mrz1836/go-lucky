@@ -13,11 +13,30 @@ before:
         magex test
       fi"
 changelog:
+  use: github
   sort: asc
+  abbrev: 0
+  format: '[`{{ slice .SHA 0 7 }}`]({{ .GitURL }}/commit/{{ .SHA }}): {{ .Message }}{{ with .AuthorUsername }} (@{{ . }}){{ end }}'
+  groups:
+    - title: "Features"
+      regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
+      order: 100
+    - title: "Bug Fixes"
+      regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
+      order: 200
+    - title: "Documentation"
+      regexp: '^.*?docs?(\([[:word:]]+\))??!?:.+$'
+      order: 300
+    - title: "Refactoring"
+      regexp: '^.*?refactor(\([[:word:]]+\))??!?:.+$'
+      order: 400
+    - title: "Other Changes"
+      order: 9999
   filters:
     exclude:
-      - "^.vscode:"
       - "^test:"
+      - "^Merge pull request"
+      - "^Merge branch"
 
 # ---------------------------
 # Builder
