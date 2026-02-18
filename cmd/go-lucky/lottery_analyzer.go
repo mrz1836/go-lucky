@@ -219,7 +219,7 @@ func NewAnalyzer(ctx context.Context, filename string, config *AnalysisConfig) (
 		return nil, fmt.Errorf(errMsgInvalidFilePath, err)
 	}
 
-	file, err := os.Open(filename) // #nosec G304 - path validated above
+	file, err := os.Open(filename) // #nosec G304,G703 - path validated above
 	if err != nil {
 		return nil, fmt.Errorf(errMsgFailedToOpenFile, err)
 	}

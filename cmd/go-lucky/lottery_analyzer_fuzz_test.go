@@ -242,7 +242,7 @@ func FuzzAnalysisConfig(f *testing.F) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		defer func() { _ = os.Remove(tmpFile.Name()) }()
+		defer func() { _ = os.Remove(tmpFile.Name()) }() // #nosec G703 - temp file path from os.CreateTemp
 
 		// Write valid test data
 		writer := csv.NewWriter(tmpFile)
@@ -303,7 +303,7 @@ func FuzzScoreNumbersByStrategy(f *testing.F) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		defer func() { _ = os.Remove(tmpFile.Name()) }()
+		defer func() { _ = os.Remove(tmpFile.Name()) }() // #nosec G703 - temp file path from os.CreateTemp
 
 		// Write test data
 		writer := csv.NewWriter(tmpFile)
@@ -370,7 +370,7 @@ func FuzzExportAnalysis(f *testing.F) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		defer func() { _ = os.Remove(tmpFile.Name()) }()
+		defer func() { _ = os.Remove(tmpFile.Name()) }() // #nosec G703 - temp file path from os.CreateTemp
 
 		// Write test data
 		writer := csv.NewWriter(tmpFile)
