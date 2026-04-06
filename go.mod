@@ -3,7 +3,7 @@ module github.com/mrz1836/go-lucky
 go 1.24.5
 
 require (
-	github.com/magefile/mage v1.17.0
+	github.com/magefile/mage v1.17.1
 	github.com/stretchr/testify v1.11.1
 )
 
