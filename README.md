@@ -101,7 +101,7 @@
 Get up and running with go-lucky in under 3 minutes!
 
 ### Prerequisites
-- [Go 1.24+](https://golang.org/doc/install) installed
+- [Go 1.25+](https://golang.org/doc/install) installed
 - [MAGE-X](https://github.com/mrz1836/mage-x) installed (`go install github.com/mrz1836/mage-x@latest`)
 - Historical lottery data file (included: `data/lucky-numbers-history.csv`)
 
