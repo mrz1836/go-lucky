@@ -27,6 +27,12 @@ const (
 	errMsgFailedToOpenFile   = "failed to open file: %w"
 	errMsgFailedToCreateFile = "failed to create file: %w"
 	errMsgFailedToCloseFile  = "Warning: failed to close file: %v\n"
+
+	// Output modes
+	outputModeDetailed = "detailed"
+
+	// Export formats
+	exportFormatConsole = "console"
 )
 
 // validateFilePath performs basic security validation on file paths
@@ -176,8 +182,8 @@ func NewAnalyzer(ctx context.Context, filename string, config *AnalysisConfig) (
 			RecentWindow:     50,
 			MinGapMultiplier: 1.5,
 			ConfidenceLevel:  0.95,
-			OutputMode:       "detailed",
-			ExportFormat:     "console",
+			OutputMode:       outputModeDetailed,
+			ExportFormat:     exportFormatConsole,
 		}
 	}
 
@@ -194,25 +200,25 @@ func NewAnalyzer(ctx context.Context, filename string, config *AnalysisConfig) (
 
 	// Validate OutputMode
 	validOutputModes := map[string]bool{
-		"":            true, // Allow empty
-		"simple":      true,
-		"detailed":    true,
-		"statistical": true,
-		"cosmic":      true,
+		"":                 true, // Allow empty
+		"simple":           true,
+		outputModeDetailed: true,
+		"statistical":      true,
+		"cosmic":           true,
 	}
 	if !validOutputModes[config.OutputMode] {
-		config.OutputMode = "detailed"
+		config.OutputMode = outputModeDetailed
 	}
 
 	// Validate ExportFormat
 	validExportFormats := map[string]bool{
-		"":        true, // Allow empty
-		"console": true,
-		"csv":     true,
-		"json":    true,
+		"":                  true, // Allow empty
+		exportFormatConsole: true,
+		"csv":               true,
+		"json":              true,
 	}
 	if !validExportFormats[config.ExportFormat] {
-		config.ExportFormat = "console"
+		config.ExportFormat = exportFormatConsole
 	}
 
 	if err := validateFilePath(filename); err != nil {

@@ -29,8 +29,8 @@ func main() {
 		RecentWindow:     50,
 		MinGapMultiplier: 1.5,
 		ConfidenceLevel:  0.95,
-		OutputMode:       "detailed",
-		ExportFormat:     "console",
+		OutputMode:       outputModeDetailed,
+		ExportFormat:     exportFormatConsole,
 	}
 
 	// Parse command line arguments
@@ -75,7 +75,7 @@ func main() {
 	}
 
 	// Export if requested
-	if config.ExportFormat != "console" {
+	if config.ExportFormat != exportFormatConsole {
 		filename := fmt.Sprintf("lottery_analysis_%s.%s",
 			time.Now().Format("20060102_150405"),
 			config.ExportFormat)

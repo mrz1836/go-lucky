@@ -16,6 +16,9 @@ const (
 	// Export formats
 	exportFormatJSON = "json"
 	exportFormatCSV  = "csv"
+
+	// CLI argument fixtures
+	programArg = "program"
 )
 
 // AnalyzerTestSuite defines the test suite for lottery analyzer
@@ -53,7 +56,7 @@ func (s *AnalyzerTestSuite) SetupTest() {
 		MinGapMultiplier: 1.5,
 		ConfidenceLevel:  0.95,
 		OutputMode:       "simple",
-		ExportFormat:     "console",
+		ExportFormat:     exportFormatConsole,
 	}
 
 	ctx := context.Background()
@@ -85,7 +88,7 @@ func (s *AnalyzerTestSuite) TestNewAnalyzerDefaultConfig() {
 
 	s.Equal(50, analyzer.config.RecentWindow)
 	s.InEpsilon(1.5, analyzer.config.MinGapMultiplier, 0.001)
-	s.Equal("detailed", analyzer.config.OutputMode)
+	s.Equal(outputModeDetailed, analyzer.config.OutputMode)
 }
 
 // TestParseDrawings tests parsing CSV data
@@ -696,7 +699,7 @@ func (s *AnalyzerTestSuite) TestExportFormats() {
 	ctx := context.Background()
 
 	// Test console format (should return error since only json/csv are supported)
-	s.analyzer.config.ExportFormat = "console"
+	s.analyzer.config.ExportFormat = exportFormatConsole
 	err := s.analyzer.ExportAnalysis(ctx, "test_console.txt")
 	s.Require().Error(err) // Console format should return error
 	s.Contains(err.Error(), "unsupported export format")
@@ -791,7 +794,7 @@ func (s *AnalyzerTestSuite) TestRunAnalysisModes() {
 	ctx := context.Background()
 
 	// Test detailed mode
-	s.analyzer.config.OutputMode = "detailed"
+	s.analyzer.config.OutputMode = outputModeDetailed
 	err := s.analyzer.RunAnalysis(ctx)
 	s.Require().NoError(err)
 
@@ -1563,7 +1566,7 @@ func (s *AnalyzerTestSuite) TestNumberAnalysisEdgeCases() {
 			RecentWindow:     3,
 			MinGapMultiplier: 1.5,
 			ConfidenceLevel:  0.95,
-			OutputMode:       "detailed",
+			OutputMode:       outputModeDetailed,
 		},
 	}
 
@@ -1638,7 +1641,7 @@ func (s *AnalyzerTestSuite) TestPrintAnalysisEdgeCases() {
 			ConsecutiveCount:   0,
 			DecadeDistribution: make(map[int]int),
 		},
-		config:            &AnalysisConfig{OutputMode: "detailed"},
+		config:            &AnalysisConfig{OutputMode: outputModeDetailed},
 		correlationEngine: NewCorrelationEngine(nil),
 	}
 
@@ -1790,49 +1793,49 @@ func (s *AnalyzerTestSuite) TestCLIArgumentParsing() {
 	}{
 		{
 			name:           "Simple mode",
-			args:           []string{"program", "--simple"},
+			args:           []string{programArg, "--simple"},
 			expectedMode:   "simple",
-			expectedFormat: "console",
+			expectedFormat: exportFormatConsole,
 			expectedWindow: 50,
 		},
 		{
 			name:           "Statistical mode",
-			args:           []string{"program", "--statistical"},
+			args:           []string{programArg, "--statistical"},
 			expectedMode:   "statistical",
-			expectedFormat: "console",
+			expectedFormat: exportFormatConsole,
 			expectedWindow: 50,
 		},
 		{
 			name:           "Cosmic mode",
-			args:           []string{"program", "--cosmic"},
+			args:           []string{programArg, "--cosmic"},
 			expectedMode:   "cosmic",
-			expectedFormat: "console",
+			expectedFormat: exportFormatConsole,
 			expectedWindow: 50,
 		},
 		{
 			name:           "JSON export",
-			args:           []string{"program", "--export-json"},
-			expectedMode:   "detailed",
+			args:           []string{programArg, "--export-json"},
+			expectedMode:   outputModeDetailed,
 			expectedFormat: exportFormatJSON,
 			expectedWindow: 50,
 		},
 		{
 			name:           "CSV export",
-			args:           []string{"program", "--export-csv"},
-			expectedMode:   "detailed",
+			args:           []string{programArg, "--export-csv"},
+			expectedMode:   outputModeDetailed,
 			expectedFormat: exportFormatCSV,
 			expectedWindow: 50,
 		},
 		{
 			name:           "Recent window",
-			args:           []string{"program", "--recent", "25"},
-			expectedMode:   "detailed",
-			expectedFormat: "console",
+			args:           []string{programArg, "--recent", "25"},
+			expectedMode:   outputModeDetailed,
+			expectedFormat: exportFormatConsole,
 			expectedWindow: 25,
 		},
 		{
 			name:           "Combined flags",
-			args:           []string{"program", "--cosmic", "--export-json", "--recent", "30"},
+			args:           []string{programArg, "--cosmic", "--export-json", "--recent", "30"},
 			expectedMode:   "cosmic",
 			expectedFormat: exportFormatJSON,
 			expectedWindow: 30,
@@ -1858,21 +1861,21 @@ func (s *AnalyzerTestSuite) TestPrintHelp() {
 // TestCLIEdgeCases tests edge cases in CLI argument parsing
 func (s *AnalyzerTestSuite) TestCLIEdgeCases() {
 	// Test invalid recent window value
-	config := parseCLIArgs([]string{"program", "--recent", "invalid"})
+	config := parseCLIArgs([]string{programArg, "--recent", "invalid"})
 	s.Equal(50, config.RecentWindow) // Should remain default
 
 	// Test recent without value
-	config = parseCLIArgs([]string{"program", "--recent"})
+	config = parseCLIArgs([]string{programArg, "--recent"})
 	s.Equal(50, config.RecentWindow) // Should remain default
 
 	// Test unknown flags are ignored
-	config = parseCLIArgs([]string{"program", "--unknown-flag", "--simple"})
+	config = parseCLIArgs([]string{programArg, "--unknown-flag", "--simple"})
 	s.Equal("simple", config.OutputMode) // Should still process known flags
 
 	// Test empty args
-	config = parseCLIArgs([]string{"program"})
-	s.Equal("detailed", config.OutputMode) // Should use defaults
-	s.Equal("console", config.ExportFormat)
+	config = parseCLIArgs([]string{programArg})
+	s.Equal(outputModeDetailed, config.OutputMode) // Should use defaults
+	s.Equal(exportFormatConsole, config.ExportFormat)
 	s.Equal(50, config.RecentWindow)
 }
 
@@ -1883,8 +1886,8 @@ func parseCLIArgs(args []string) *AnalysisConfig {
 		RecentWindow:     50,
 		MinGapMultiplier: 1.5,
 		ConfidenceLevel:  0.95,
-		OutputMode:       "detailed",
-		ExportFormat:     "console",
+		OutputMode:       outputModeDetailed,
+		ExportFormat:     exportFormatConsole,
 	}
 
 	// Parse command line arguments
