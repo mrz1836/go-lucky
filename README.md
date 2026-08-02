@@ -549,6 +549,30 @@ func (ce *CorrelationEngine) analyzeNewFactor() {
 
 </details>
 
+<details>
+<summary><strong>🌐 Web Frontend (Landing Site)</strong></summary>
+<br/>
+
+The project ships a static landing site in [web-assets/](web-assets/) that is deployed via Netlify. It's a dependency-free vanilla HTML/CSS/JS site with a small [Vitest](https://vitest.dev/) + [jsdom](https://github.com/jsdom/jsdom) test suite covering the client-side logic (number generation, URL/DOM helpers, and utilities).
+
+```bash
+# Install the JS dev dependencies (Node 22+ recommended)
+npm install
+
+# Serve the site locally at http://localhost:3000
+npm run dev
+
+# Run the frontend test suite
+npm test
+
+# Run the tests with a coverage report
+npm run test:coverage
+```
+
+The site is published from the `web-assets/` directory; Netlify builds with `NODE_VERSION = 22` (see [netlify.toml](netlify.toml)). Frontend dependencies are kept patched via npm `overrides` in [package.json](package.json), and updates are managed automatically by Dependabot.
+
+</details>
+
 <br/>
 
 ## 🎯 Mage Commands Reference
