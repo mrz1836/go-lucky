@@ -241,38 +241,8 @@ function generateRandomLuckyBall() {
     return Math.floor(Math.random() * 18) + 1;
 }
 
-// Update cosmic selection periodically (for demo purposes)
-function updateCosmicSelection() {
-    const cosmicNumbers = generateRandomCosmicNumbers();
-    const luckyBall = generateRandomLuckyBall();
-
-    const mainNumbers = document.querySelector('.cosmic-selection .main-numbers');
-    const luckyBallElement = document.querySelector('.cosmic-selection .lucky');
-
-    if (mainNumbers && luckyBallElement) {
-        // Animate out
-        mainNumbers.style.opacity = '0.5';
-        luckyBallElement.style.opacity = '0.5';
-
-        setTimeout(() => {
-            // Update numbers
-            const numberElements = mainNumbers.querySelectorAll('.number');
-            cosmicNumbers.forEach((num, index) => {
-                if (numberElements[index]) {
-                    numberElements[index].textContent = num.toString().padStart(2, '0');
-                }
-            });
-
-            luckyBallElement.textContent = luckyBall.toString();
-
-            // Animate in
-            mainNumbers.style.opacity = '1';
-            luckyBallElement.style.opacity = '1';
-        }, 300);
-    }
-}
-
-// Update cosmic selection every 30 seconds for demo
+// Update cosmic selection every 30 seconds for demo.
+// updateCosmicSelection is defined below (the analytics-aware version).
 setInterval(updateCosmicSelection, 30000);
 
 // Console easter egg
@@ -776,3 +746,12 @@ function updateCopyrightYear() {
         console.log(`© Copyright year updated to: ${currentYear}`);
     }
 }
+
+// Expose additional pure/helper functions for unit testing.
+// This is additive and does not affect runtime behavior in the browser.
+window.GoLucky = Object.assign(window.GoLucky || {}, {
+    debounce,
+    getDomainFromUrl,
+    getButtonType,
+    getSourceSection
+});
