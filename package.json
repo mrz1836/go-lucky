@@ -21,7 +21,7 @@
     "name": "go-lucky-lottery-analyzer",
     "overrides": {
         "brace-expansion": "1.1.18",
-        "nanoid": "3.3.17",
+        "nanoid": "3.3.18",
         "on-headers": "1.1.0"
     },
     "repository": {
