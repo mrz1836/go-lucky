@@ -313,7 +313,7 @@ func FuzzScoreNumbersByStrategy(f *testing.F) {
 			for j := 1; j <= 5; j++ {
 				nums = append(nums, fmt.Sprintf("%d", ((i*j)%48)+1))
 			}
-			nums = append(nums, fmt.Sprintf("%d", ((i)%18)+1))
+			nums = append(nums, fmt.Sprintf("%d", (i%18)+1))
 			_ = writer.Write(nums)
 		}
 		writer.Flush()
